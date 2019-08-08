@@ -6,6 +6,20 @@ org 0x7c00
 %assign BootSectorSize 512
 %assign WordSize 2
 
+;; Width and Height apply to both the screen (in text coordinates) and the ;;
+;; minefield
+%assign Width 40
+%assign Height 25
+
+;; The minefield is stored after the boot sector at runtime. After the boot
+;; sector, there is 480.5K of memory safe to use.
+;; https://wiki.osdev.org/Memory_Map_(x86)#Overview
+
+%assign MinefieldSize Width * Height
+;; TODO: Document these
+%assign MinefieldActual BootSectorEnd
+%assign Minefieldvisible MinefieldActual + MinefieldSize
+
 Entry:
   ; VGA text mode 0x00
   ; 320x200 pixel resolution
@@ -14,6 +28,8 @@ Entry:
   ; http://www.ctyme.com/intr/rb-0069.htm
   xor ax, ax
   int 0x10
+
+InitMinefield:
 
 PrintHelloWorld:
   mov cx, HelloWorldStrLen
@@ -41,7 +57,4 @@ CodeEnd:
   ; Boot sector magic
   dw 0xaa55
 
-Minefield:
-  ; The map is stored after the boot sector at runtime. Here we have 480.5K safe
-  ; to use.
-  ; https://wiki.osdev.org/Memory_Map_(x86)#Overview
+BootSectorEnd:
