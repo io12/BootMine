@@ -1,3 +1,5 @@
+BITS 16
+
   ; Boot sector load address
 org 0x7c00
 
