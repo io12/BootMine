@@ -1,7 +1,7 @@
 BITS 16
 
   ; Boot sector load address
-org 0x7c00
+%assign BootSectorAddr 0x7c00
 
 %assign BootSectorSize 512
 %assign WordSize 2
@@ -17,8 +17,10 @@ org 0x7c00
 
 %assign MinefieldSize Width * Height
 ;; TODO: Document these
-%assign MinefieldActual BootSectorEnd
-%assign Minefieldvisible MinefieldActual + MinefieldSize
+%assign MinefieldActual BootSectorAddr + BootSectorSize
+%assign MinefieldVisible MinefieldActual + MinefieldSize
+
+org BootSectorAddr
 
 Entry:
   ; VGA text mode 0x00
@@ -30,6 +32,7 @@ Entry:
   int 0x10
 
 InitMinefield:
+  rdtsc
 
 PrintHelloWorld:
   mov cx, HelloWorldStrLen
@@ -57,4 +60,4 @@ CodeEnd:
   ; Boot sector magic
   dw 0xaa55
 
-BootSectorEnd:
+;; Boot sector ends here
