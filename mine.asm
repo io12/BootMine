@@ -3,8 +3,8 @@ BITS 16
   ; Boot sector load address
 org 0x7c00
 
-%define BootSectorSize 512
-%define WordSize 2
+%assign BootSectorSize 512
+%assign WordSize 2
 
 Entry:
   ; VGA text mode 0x03
