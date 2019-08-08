@@ -27,6 +27,10 @@ HelloWorldStr:
   db "Hello world!"
   HelloWorldStrLen equ $ - HelloWorldStr
 
+;; Print program size at build time
+%assign CodeSize $ - $$
+%warning Code is CodeSize bytes
+
 CodeEnd:
   ; Pad to size of boot sector, minus the size of a word for the boot sector
   ; magic value
