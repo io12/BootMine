@@ -1,3 +1,5 @@
+.POSIX:
+
 QEMU = qemu-system-i386
 NASM = nasm
 
