@@ -68,10 +68,14 @@ PrintHelloWorld:
 
 ;; Return a random value in AX
 Rand:
-  mov ax, [RandomSeed]
-  mul ax, 1103515245
-  add ax, 12345
+  ; LCG algorithm
+  ; val = seed = seed * 25173 + 13849
+  push dx
+  mov ax, 25173
+  mul WORD [RandomSeed]
+  add ax, 13849
   mov [RandomSeed], ax
+  pop dx
   ret
 
 HelloWorldStr:
