@@ -15,6 +15,8 @@ Entry:
 PrintHelloWorld:
   mov cx, HelloWorldStrLen
   mov bp, HelloWorldStr
+  mov bx, 0x0064
+  xor dx, dx
   mov ax, 0x1300
   int 0x10
   hlt
