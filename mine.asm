@@ -1,6 +1,9 @@
 BITS 16
+CPU 8086
 
-  ; Boot sector load address
+;; CONSTANTS
+
+;; Boot sector load address
 %assign BootSectorAddr 0x7c00
 
 %assign BootSectorSize 512
@@ -11,7 +14,11 @@ BITS 16
 %assign Width 40
 %assign Height 25
 
-;; The minefield is stored after the boot sector at runtime. After the boot
+;; GLOBAL VARIABLES
+
+;; TODO: Change global vars to a state struct
+
+;; Global variables are stored after the boot sector at runtime. After the boot
 ;; sector, there is 480.5K of memory safe to use.
 ;; https://wiki.osdev.org/Memory_Map_(x86)#Overview
 
@@ -19,6 +26,9 @@ BITS 16
 ;; TODO: Document these
 %assign MinefieldActual BootSectorAddr + BootSectorSize
 %assign MinefieldVisible MinefieldActual + MinefieldSize
+
+;; Seed used for random number generation
+%assign RandomSeed MinefieldVisible + MinefieldSize
 
 org BootSectorAddr
 
@@ -31,8 +41,21 @@ Entry:
   xor ax, ax
   int 0x10
 
-InitMinefield:
-  rdtsc
+  ; Store number of clock ticks since midnight in CX:DX
+  ; http://www.ctyme.com/intr/rb-2271.htm
+  xor ax, ax
+  int 0x1a
+
+  ; Seed the RNG with the amount of ticks
+  mov [RandomSeed], dx
+
+  ; Populate MinefieldActual with mines and empty cells
+  mov di, MinefieldActual
+  mov cx, MinefieldSize
+.PopulateMinefieldActualLoop:
+  call Rand
+  stosb
+  loop .PopulateMinefieldActualLoop
 
 PrintHelloWorld:
   mov cx, HelloWorldStrLen
@@ -42,6 +65,14 @@ PrintHelloWorld:
   mov ax, 0x1300
   int 0x10
   hlt
+
+;; Return a random value in AX
+Rand:
+  mov ax, [RandomSeed]
+  mul ax, 1103515245
+  add ax, 12345
+  mov [RandomSeed], ax
+  ret
 
 HelloWorldStr:
   db "Hello world!"
