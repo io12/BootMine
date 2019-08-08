@@ -33,7 +33,9 @@ HelloWorldStr:
 
 CodeEnd:
   ; Pad to size of boot sector, minus the size of a word for the boot sector
-  ; magic value
-  times (BootSectorSize - WordSize) - ($ - $$) db 0
-BootSectorMagic:
+  ; magic value. If the code is too big to fit in a boot sector, the `times`
+  ; directive uses a negative value, causing a build error.
+  times (BootSectorSize - WordSize) - CodeSize db 0
+
+  ; Boot sector magic
   dw 0xaa55
