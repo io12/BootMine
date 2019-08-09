@@ -1,0 +1,8 @@
+megs:            32
+display_library: x, options="gui_debug"
+romimage:        file=/usr/share/bochs/BIOS-bochs-latest
+vgaromimage:     file=/usr/share/bochs/VGABIOS-lgpl-latest
+floppya:         1_44=bootmine, status=inserted
+boot:            floppy
+clock:           sync=realtime, time0=local
+magic_break:     enabled=1

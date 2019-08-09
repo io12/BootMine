@@ -1,9 +1,10 @@
 .POSIX:
 
 QEMU = qemu-system-i386
+BOCHS = bochs
 NASM = nasm
 
-.PHONY: all clean qemu
+.PHONY: all clean qemu bochs
 
 all: bootmine
 
@@ -15,3 +16,6 @@ clean:
 
 qemu: bootmine
 	$(QEMU) $<
+
+bochs: bootmine
+	$(BOCHS) -q -f bochsrc.txt
