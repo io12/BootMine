@@ -77,21 +77,31 @@ PrintMinefield:
 
 ;; Return a random value in AX
 Rand:
-  ; TODO: Document algorithm
+  ; 16 bit xorshift
+  ;
+  ;   xs ^= xs << 7;
+  ;   xs ^= xs >> 9;
+  ;   xs ^= xs << 8;
+  ;   return xs;
+  ;
+  ; http://www.retroprogramming.com/2017/07/xorshift-pseudorandom-numbers-in-z80.html
   push bx
   push cx
   mov ax, [RandomSeed]
 
+  ; ax ^= ax << 7
   mov bx, ax
   mov cx, 7
   shl bx, cl
   xor ax, bx
 
+  ; ax ^= ax >> 9
   mov bx, ax
   mov cx, 9
   shr bx, cl
   xor ax, bx
 
+  ; ax ^= ax << 8
   mov bx, ax
   mov cx, 8
   shl bx, cl
