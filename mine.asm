@@ -95,16 +95,27 @@ NumCells:
   jmp .WriteCell
 .Empty:
   mov ax, '0'
+
   ; Straight
-  add ax, [di - 1 - Map.Mines.ToUnveiled]
-  add ax, [di + 1 - Map.Mines.ToUnveiled]
-  add ax, [di - Width - Map.Mines.ToUnveiled]
-  add ax, [di + Width - Map.Mines.ToUnveiled]
+  lea bx, [di - 1 - Map.Mines.ToUnveiled]
+  call LeftIncIfMineAtCell
+  lea bx, [di + 1 - Map.Mines.ToUnveiled]
+  call RightIncIfMineAtCell
+  lea bx, [di - Width - Map.Mines.ToUnveiled]
+  call IncIfMineAtCell
+  lea bx, [di + Width - Map.Mines.ToUnveiled]
+  call IncIfMineAtCell
+
   ; Diagonal
-  add ax, [di - 1 - Width - Map.Mines.ToUnveiled]
-  add ax, [di - 1 + Width - Map.Mines.ToUnveiled]
-  add ax, [di + 1 - Width - Map.Mines.ToUnveiled]
-  add ax, [di + 1 + Width - Map.Mines.ToUnveiled]
+  lea bx, [di - 1 - Width - Map.Mines.ToUnveiled]
+  call LeftIncIfMineAtCell
+  lea bx, [di - 1 + Width - Map.Mines.ToUnveiled]
+  call LeftIncIfMineAtCell
+  lea bx, [di + 1 - Width - Map.Mines.ToUnveiled]
+  call RightIncIfMineAtCell
+  lea bx, [di + 1 + Width - Map.Mines.ToUnveiled]
+  call RightIncIfMineAtCell
+
   cmp ax, '0'
   jne .WriteCell
 .Zero:
@@ -122,26 +133,51 @@ PrintMinefield:
   int 0x10
   hlt
 
-;; Determine if there is a mine in Map.Mines at index DI, where DI is a pointer
-;; inside Map.Mines. In the case where DI is outside Map.Mines, zero is
-;; returned.
+LeftIncIfMineAtCell:
+  push bx
+  push ax
+  push dx
+  sub bx, Map.Mines
+  div bx
+  test dx, dx
+  pop bx
+  pop ax
+  pop dx
+  jz IncIfMineAtCell.RetZero
+  jmp IncIfMineAtCell
+RightIncIfMineAtCell:
+  push bx
+  push ax
+  push dx
+  sub bx, Map.Mines
+  div bx
+  cmp dx, Width - 1
+  pop bx
+  pop ax
+  pop dx
+  je IncIfMineAtCell.RetZero
+;; TODO: Update comment
+;;
+;; Increment AX if there is a mine in Map.Mines at index BX, where BX is a
+;; pointer inside Map.Mines. In the case where BX is outside Map.Mines, AX is
+;; NOT incremented.
 ;;
 ;; Parameters
-;;   * DI - Pointer inside Map.Mines
+;;   * BX - Pointer inside Map.Mines
 ;; Clobbered registers
-;;   * AX - 0 or 1, depending on whether there is a mine at DI
-MineAtCell:
+;;   * AX - either incremented or unchanged, depending on whether there is or
+;;          isn't a mine at BX, respectively
+IncIfMineAtCell:
   ; Bounds check
-  cmp di, Map.Mines
+  cmp bx, Map.Mines
   jb .RetZero
-  cmp di, Map.Mines + Map.Size
+  cmp bx, Map.Mines + Map.Size
   jae .RetZero
-  ; Within map bounds, dereference map pointer
-  mov ax, [di]
+  ; Within map bounds. Dereference and add map pointer.
+  add ax, [bx]
   ret
 .RetZero:
-  ; Outside map bounds, return zero
-  xor ax, ax
+  ; Outside map bounds. Do not increment.
   ret
 
 ;; Return a random value in AX
