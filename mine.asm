@@ -77,14 +77,29 @@ PrintMinefield:
 
 ;; Return a random value in AX
 Rand:
-  ; LCG algorithm
-  ; val = seed = seed * 25173 + 13849
-  push dx
-  mov ax, 25173
-  mul WORD [RandomSeed]
-  add ax, 13849
+  ; TODO: Document algorithm
+  push bx
+  push cx
+  mov ax, [RandomSeed]
+
+  mov bx, ax
+  mov cx, 7
+  shl bx, cl
+  xor ax, bx
+
+  mov bx, ax
+  mov cx, 9
+  shr bx, cl
+  xor ax, bx
+
+  mov bx, ax
+  mov cx, 8
+  shl bx, cl
+  xor ax, bx
+
   mov [RandomSeed], ax
-  pop dx
+  pop bx
+  pop cx
   ret
 
 HelloWorldStr:
