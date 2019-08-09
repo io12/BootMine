@@ -63,6 +63,9 @@ Entry:
   xor ax, ax
   int 0x1a
 
+  ; TODO: Remove hard-coded seed
+  mov dx, 12345
+
   ; Seed the RNG with the amount of ticks
   mov [RandomSeed], dx
 
