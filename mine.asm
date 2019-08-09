@@ -10,7 +10,7 @@ CPU 8086
 
 %assign WordSize 2
 
-;; Width and Height apply to both the screen (in text coordinates) and the ;;
+;; Width and Height apply to both the screen (in text coordinates) and the
 ;; minefield
 %assign Width 40
 %assign Height 25
