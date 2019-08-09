@@ -102,15 +102,15 @@ NumCells:
 .Empty:
   mov ax, '0'
   ; Straight
-  add ax, [di - Height - Map.Mines.ToUnveiled]
-  add ax, [di + Height - Map.Mines.ToUnveiled]
+  add ax, [di - 1 - Map.Mines.ToUnveiled]
+  add ax, [di + 1 - Map.Mines.ToUnveiled]
   add ax, [di - Width - Map.Mines.ToUnveiled]
   add ax, [di + Width - Map.Mines.ToUnveiled]
   ; Diagonal
-  add ax, [di - Height - Width - Map.Mines.ToUnveiled]
-  add ax, [di - Height + Width - Map.Mines.ToUnveiled]
-  add ax, [di + Height - Width - Map.Mines.ToUnveiled]
-  add ax, [di + Height + Width - Map.Mines.ToUnveiled]
+  add ax, [di - 1 - Width - Map.Mines.ToUnveiled]
+  add ax, [di - 1 + Width - Map.Mines.ToUnveiled]
+  add ax, [di + 1 - Width - Map.Mines.ToUnveiled]
+  add ax, [di + 1 + Width - Map.Mines.ToUnveiled]
   cmp ax, '0'
   jne .WriteCell
 .Zero:
