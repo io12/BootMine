@@ -4,9 +4,10 @@ CPU 8086
 ;; CONSTANTS
 
 ;; Boot sector load address
-%assign BootSectorAddr 0x7c00
+%assign BootSector.Begin 0x7c00
+%assign BootSector.Size 512
+%assign BootSector.End BootSector.Begin + BootSector.Size
 
-%assign BootSectorSize 512
 %assign WordSize 2
 
 ;; Width and Height apply to both the screen (in text coordinates) and the ;;
@@ -22,15 +23,25 @@ CPU 8086
 ;; sector, there is 480.5K of memory safe to use.
 ;; https://wiki.osdev.org/Memory_Map_(x86)#Overview
 
-%assign MinefieldSize Width * Height
+%assign Vars.Begin BootSector.End
+
+%assign Map.Size Width * Height
 ;; TODO: Document these
-%assign MinefieldActual BootSectorAddr + BootSectorSize
-%assign MinefieldVisible MinefieldActual + MinefieldSize
+%assign Map.Mines Vars.Begin + Map.Size
+%assign Map.Unveiled Map.Mines + 2 * Map.Size
+%assign Map.Displayed Map.Unveiled + 2 * Map.Size
+
+;; Distance between Map.Mines and Map.Unveiled
+%assign Map.Mines.ToUnveiled (Map.Unveiled - Map.Mines)
 
 ;; Seed used for random number generation
-%assign RandomSeed MinefieldVisible + MinefieldSize
+%assign RandomSeed Map.Displayed + 2 * Map.Size
 
-org BootSectorAddr
+%assign Vars.End RandomSeed + WordSize
+
+%assign Vars.Size Vars.End - Vars.Begin
+
+org BootSector.Begin
 
 Entry:
   ; VGA text mode 0x00
@@ -41,6 +52,12 @@ Entry:
   xor ax, ax
   int 0x10
 
+  ; Zero global variables and padding after boot sector
+  mov di, Vars.Begin
+  mov cx, Vars.Size
+  xor ax, ax
+  rep stosb
+
   ; Store number of clock ticks since midnight in CX:DX
   ; http://www.ctyme.com/intr/rb-2271.htm
   xor ax, ax
@@ -49,26 +66,49 @@ Entry:
   ; Seed the RNG with the amount of ticks
   mov [RandomSeed], dx
 
-  ; Populate MinefieldActual with mines and empty cells
-  mov di, MinefieldActual
-  mov cx, MinefieldSize
-.PopulateMinefieldActualLoop:
-  ; ax = Rand() & 0b111 ? ' ' : '*'
+;; Populate Map.Mines with mines
+PopulateMines:
+  mov di, Map.Mines
+  mov cx, Map.Size
+.Loop:
+  ; ax = Rand() & 0b111 ? 0 : 1
   call Rand
   test ax, 0b111
   jz .Mine
 .Empty:
-  mov ax, ' '
+  xor ax, ax
+  jmp .WriteCell
+.Mine:
+  mov ax, 1
+.WriteCell:
+  stosb
+  loop .Loop
+
+;; Number empty cells with amount of neighboring mines
+NumCells:
+  mov di, Map.Unveiled
+  mov cx, Map.Size
+.Loop:
+  ; Get digit for the cell at DI
+  mov ax, [di]
+  test ax, ax
+  jz .Mine
+.Empty:
+  mov ax, '0'
+  add ax, [di - Height - Map.Mines.ToUnveiled]
+  add ax, [di + Height - Map.Mines.ToUnveiled]
+  add ax, [di - Width - Map.Mines.ToUnveiled]
+  add ax, [di + Width - Map.Mines.ToUnveiled]
   jmp .WriteCell
 .Mine:
   mov ax, '*'
 .WriteCell:
   stosb
-  loop .PopulateMinefieldActualLoop
+  loop .Loop
 
 PrintMinefield:
-  mov cx, MinefieldSize
-  mov bp, MinefieldActual
+  mov cx, Map.Size
+  mov bp, Map.Unveiled
   mov bx, 0x0064
   xor dx, dx
   mov ax, 0x1300
@@ -124,7 +164,7 @@ CodeEnd:
   ; Pad to size of boot sector, minus the size of a word for the boot sector
   ; magic value. If the code is too big to fit in a boot sector, the `times`
   ; directive uses a negative value, causing a build error.
-  times (BootSectorSize - WordSize) - CodeSize db 0
+  times (BootSector.Size - WordSize) - CodeSize db 0
 
   ; Boot sector magic
   dw 0xaa55
