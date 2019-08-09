@@ -53,7 +53,16 @@ Entry:
   mov di, MinefieldActual
   mov cx, MinefieldSize
 .PopulateMinefieldActualLoop:
+  ; ax = Rand() & 0b111 ? '*' : 0
   call Rand
+  cmp ax, 0b111
+  jz .Mine
+.Empty:
+  xor ax, ax
+  jmp .WriteCell
+.Mine:
+  mov ax, '*'
+.WriteCell:
   stosb
   loop .PopulateMinefieldActualLoop
 
