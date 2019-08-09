@@ -98,10 +98,16 @@ NumCells:
   jmp .WriteCell
 .Empty:
   mov ax, '0'
+  ; Straight
   add ax, [di - Height - Map.Mines.ToUnveiled]
   add ax, [di + Height - Map.Mines.ToUnveiled]
   add ax, [di - Width - Map.Mines.ToUnveiled]
   add ax, [di + Width - Map.Mines.ToUnveiled]
+  ; Diagonal
+  add ax, [di - Height - Width - Map.Mines.ToUnveiled]
+  add ax, [di - Height + Width - Map.Mines.ToUnveiled]
+  add ax, [di + Height - Width - Map.Mines.ToUnveiled]
+  add ax, [di + Height + Width - Map.Mines.ToUnveiled]
 .WriteCell:
   stosb
   loop .Loop
