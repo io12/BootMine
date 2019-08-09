@@ -53,7 +53,7 @@ Entry:
   mov di, MinefieldActual
   mov cx, MinefieldSize
 .PopulateMinefieldActualLoop:
-  ; ax = Rand() & 0b111 ? 0 : '*'
+  ; ax = Rand() & 0b111 ? ' ' : '*'
   call Rand
   test ax, 0b111
   jz .Mine
