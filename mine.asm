@@ -90,18 +90,18 @@ NumCells:
   mov cx, Map.Size
 .Loop:
   ; Get digit for the cell at DI
-  mov ax, [di]
+  mov ax, [di - Map.Mines.ToUnveiled]
   test ax, ax
-  jz .Mine
+  jz .Empty
+.Mine:
+  mov ax, '*'
+  jmp .WriteCell
 .Empty:
   mov ax, '0'
   add ax, [di - Height - Map.Mines.ToUnveiled]
   add ax, [di + Height - Map.Mines.ToUnveiled]
   add ax, [di - Width - Map.Mines.ToUnveiled]
   add ax, [di + Width - Map.Mines.ToUnveiled]
-  jmp .WriteCell
-.Mine:
-  mov ax, '*'
 .WriteCell:
   stosb
   loop .Loop
