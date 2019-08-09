@@ -27,15 +27,15 @@ CPU 8086
 
 %assign Map.Size Width * Height
 ;; TODO: Document these
-%assign Map.Mines Vars.Begin + Map.Size
-%assign Map.Unveiled Map.Mines + 2 * Map.Size
-%assign Map.Displayed Map.Unveiled + 2 * Map.Size
+%assign Map.Mines Vars.Begin
+%assign Map.Unveiled Map.Mines + Map.Size
+%assign Map.Displayed Map.Unveiled + Map.Size
 
 ;; Distance between Map.Mines and Map.Unveiled
 %assign Map.Mines.ToUnveiled (Map.Unveiled - Map.Mines)
 
 ;; Seed used for random number generation
-%assign RandomSeed Map.Displayed + 2 * Map.Size
+%assign RandomSeed Map.Displayed + Map.Size
 
 %assign Vars.End RandomSeed + WordSize
 
@@ -51,12 +51,6 @@ Entry:
   ; http://www.ctyme.com/intr/rb-0069.htm
   xor ax, ax
   int 0x10
-
-  ; Zero global variables and padding after boot sector
-  mov di, Vars.Begin
-  mov cx, Vars.Size
-  xor ax, ax
-  rep stosb
 
   ; Store number of clock ticks since midnight in CX:DX
   ; http://www.ctyme.com/intr/rb-2271.htm
