@@ -108,6 +108,10 @@ NumCells:
   add ax, [di - Height + Width - Map.Mines.ToUnveiled]
   add ax, [di + Height - Width - Map.Mines.ToUnveiled]
   add ax, [di + Height + Width - Map.Mines.ToUnveiled]
+  cmp ax, '0'
+  jne .WriteCell
+.Zero:
+  mov ax, ' '
 .WriteCell:
   stosb
   loop .Loop
