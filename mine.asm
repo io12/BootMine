@@ -58,7 +58,7 @@ Entry:
   test ax, 0b111
   jz .Mine
 .Empty:
-  xor ax, ax
+  mov ax, ' '
   jmp .WriteCell
 .Mine:
   mov ax, '*'
@@ -66,9 +66,9 @@ Entry:
   stosb
   loop .PopulateMinefieldActualLoop
 
-PrintHelloWorld:
-  mov cx, HelloWorldStrLen
-  mov bp, HelloWorldStr
+PrintMinefield:
+  mov cx, MinefieldSize
+  mov bp, MinefieldActual
   mov bx, 0x0064
   xor dx, dx
   mov ax, 0x1300
