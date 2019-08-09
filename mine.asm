@@ -122,6 +122,28 @@ PrintMinefield:
   int 0x10
   hlt
 
+;; Determine if there is a mine in Map.Mines at index DI, where DI is a pointer
+;; inside Map.Mines. In the case where DI is outside Map.Mines, zero is
+;; returned.
+;;
+;; Parameters
+;;   * DI - Pointer inside Map.Mines
+;; Clobbered registers
+;;   * AX - 0 or 1, depending on whether there is a mine at DI
+MineAtCell:
+  ; Bounds check
+  cmp di, Map.Mines
+  jb .RetZero
+  cmp di, Map.Mines + Map.Size
+  jae .RetZero
+  ; Within map bounds, dereference map pointer
+  mov ax, [di]
+  ret
+.RetZero:
+  ; Outside map bounds, return zero
+  xor ax, ax
+  ret
+
 ;; Return a random value in AX
 Rand:
   ; 16 bit xorshift
