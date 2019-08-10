@@ -133,7 +133,7 @@ PrintMinefield:
   int 0x10
   hlt
 
-LeftIncIfMineAtCell:
+RightIncIfMineAtCell:
   push bx
   push ax
   push dx
@@ -148,7 +148,8 @@ LeftIncIfMineAtCell:
   pop bx
   jz IncIfMineAtCell.RetZero
   jmp IncIfMineAtCell
-RightIncIfMineAtCell:
+
+LeftIncIfMineAtCell:
   push bx
   push ax
   push dx
