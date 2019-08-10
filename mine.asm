@@ -186,6 +186,7 @@ GameLoop:
   xor bp, bp
 
 .SetCursorPos:
+  xor bx, bx
   mov ax, bp
   mov cl, Map.Width
   div cl
