@@ -20,6 +20,14 @@ CPU 8086
 %assign Map.Height Screen.Height - 1
 %assign Map.Size Map.Width * Map.Height
 
+;; Keyboard scan codes
+;; http://www.ctyme.com/intr/rb-0045.htm#Table6
+%assign Key.Space 0x39
+%assign Key.Up 0x48
+%assign Key.Down 0x50
+%assign Key.Left 0x4b
+%assign Key.Right 0x4d
+
 ;; GLOBAL VARIABLES
 
 ;; TODO: Change global vars to a state struct
