@@ -143,8 +143,48 @@ PrintMinefield:
   xor dx, dx
   mov ax, 0x1300
   int 0x10
-  cli
-  hlt
+
+  xor bp, bp
+
+GameLoop:
+  ; Get keystroke
+  ; AH = BIOS scan code
+  ; AL = ASCII character
+  ; http://www.ctyme.com/intr/rb-1754.htm
+  xor ax, ax
+  int 0x16
+
+.CmpUp:
+  cmp ah, Key.Up
+  jne .CmpDown
+  sub bp, Map.Width
+  jmp .SetCursorPos
+.CmpDown:
+  cmp ah, Key.Down
+  jne .CmpLeft
+  add bp, Map.Width
+  jmp .SetCursorPos
+.CmpLeft:
+  cmp ah, Key.Left
+  jne .CmpRight
+  dec bp
+  jmp .SetCursorPos
+.CmpRight:
+  cmp ah, Key.Right
+  jne GameLoop
+  inc bp
+
+.SetCursorPos:
+  ; Set cursor position
+  ; DH = Row
+  ; DL = Column
+  ; http://www.ctyme.com/intr/rb-0087.htm
+  mov dx, bp
+  xor dh, dh
+  mov ah, 0x02
+  int 0x10
+
+  jmp GameLoop
 
 RightIncIfMineAtCell:
   push bx
