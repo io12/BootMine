@@ -11,7 +11,7 @@ CPU 8086
 %assign WordSize 2
 
 ;; Address and dimensions of text buffer
-%assign TextBuf 0xb800
+%assign TextBuf.Seg 0xb800
 %assign TextBuf.Width 40
 %assign TextBuf.Height 25
 
@@ -137,11 +137,15 @@ NumCells:
 
 PrintMinefield:
   mov cx, Map.Size
-  mov di, TextBuf
+  xor di, di
   mov ah, 0xa0
 .Loop:
-  mov al, [Map.Unveiled]
+  mov al, [di + Map.Unveiled]
+  mov dx, TextBuf.Seg
+  mov es, dx
   stosw
+  xor dx, dx
+  mov es, dx
   loop .Loop
 
   xor bp, bp
