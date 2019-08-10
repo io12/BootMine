@@ -87,7 +87,7 @@ NumCells:
   mov cx, Map.Size
 .Loop:
   ; Get digit for the cell at DI
-  mov ax, [di - Map.Mines.ToUnveiled]
+  mov al, [di - Map.Mines.ToUnveiled]
   test ax, ax
   jz .Empty
 .Mine:
