@@ -181,7 +181,7 @@ IncIfMineAtCell:
   cmp bx, Map.Mines + Map.Size
   jae .RetZero
   ; Within map bounds. Dereference and add map pointer.
-  add ax, [bx]
+  add al, [bx]
   ret
 .RetZero:
   ; Outside map bounds. Do not increment.
