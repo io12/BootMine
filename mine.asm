@@ -158,21 +158,26 @@ GameLoop:
   cmp ah, Key.Up
   jne .CmpDown
   sub bp, Map.Width
-  jmp .SetCursorPos
+  jmp .WrapCursor
 .CmpDown:
   cmp ah, Key.Down
   jne .CmpLeft
   add bp, Map.Width
-  jmp .SetCursorPos
+  jmp .WrapCursor
 .CmpLeft:
   cmp ah, Key.Left
   jne .CmpRight
   dec bp
-  jmp .SetCursorPos
+  jmp .WrapCursor
 .CmpRight:
   cmp ah, Key.Right
   jne GameLoop
   inc bp
+
+.WrapCursor:
+  cmp bp, Map.Size
+  jb .SetCursorPos
+  xor bp, bp
 
 .SetCursorPos:
   mov ax, bp
