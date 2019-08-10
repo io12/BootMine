@@ -174,8 +174,21 @@ GameLoop:
   jmp .WrapCursor
 .CmpRight:
   cmp ah, Key.Right
-  jne GameLoop
+  jne .CmpSpace
   inc bp
+  jmp .WrapCursor
+.CmpSpace:
+  cmp ah, Key.Space
+  jne GameLoop
+
+.ClearCell:
+  ; Video - write character and attribute at cursor position
+  ; http://www.ctyme.com/intr/rb-0099.htm
+  mov ah, 0x09
+  mov al, [bp + Map.Unveiled]
+  mov bx, 0x00a0
+  mov cx, 1
+  int 0x10
 
 .WrapCursor:
   cmp bp, Map.Size
