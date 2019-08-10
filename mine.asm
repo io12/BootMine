@@ -138,14 +138,16 @@ NumCells:
 PrintMinefield:
   mov cx, Map.Size
   xor di, di
+  xor si, si
   mov ah, 0xa0
 .Loop:
-  mov al, [di + Map.Unveiled]
+  mov al, [si + Map.Unveiled]
   mov dx, TextBuf.Seg
   mov es, dx
   stosw
   xor dx, dx
   mov es, dx
+  inc si
   loop .Loop
 
   xor bp, bp
