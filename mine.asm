@@ -10,14 +10,14 @@ CPU 8086
 
 %assign WordSize 2
 
-;; Screen dimensions in text coordinates
-%assign Screen.Width 40
-%assign Screen.Height 25
+;; Address and dimensions of text buffer
+%assign TextBuf 0xb800
+%assign TextBuf.Width 40
+%assign TextBuf.Height 25
 
 ;; Minefield dimensions
-%assign Map.Width Screen.Width
-;; Map height one less than screen height to avoid scrolling
-%assign Map.Height Screen.Height - 1
+%assign Map.Width TextBuf.Width
+%assign Map.Height TextBuf.Height
 %assign Map.Size Map.Width * Map.Height
 
 ;; Keyboard scan codes
@@ -137,11 +137,12 @@ NumCells:
 
 PrintMinefield:
   mov cx, Map.Size
-  mov bp, Map.Unveiled
-  mov bx, 0x00a0
-  xor dx, dx
-  mov ax, 0x1300
-  int 0x10
+  mov di, TextBuf
+  mov ah, 0xa0
+.Loop:
+  mov al, [Map.Unveiled]
+  stosw
+  loop .Loop
 
   xor bp, bp
 
