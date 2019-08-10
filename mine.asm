@@ -127,7 +127,7 @@ NumCells:
 PrintMinefield:
   mov cx, Map.Size
   mov bp, Map.Unveiled
-  mov bx, 0x0064
+  mov bx, 0x00a0
   xor dx, dx
   mov ax, 0x1300
   int 0x10
