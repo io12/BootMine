@@ -10,10 +10,15 @@ CPU 8086
 
 %assign WordSize 2
 
-;; Width and Height apply to both the screen (in text coordinates) and the
-;; minefield
-%assign Width 40
-%assign Height 25
+;; Screen dimensions in text coordinates
+%assign Screen.Width 40
+%assign Screen.Height 25
+
+;; Minefield dimensions
+%assign Map.Width Screen.Width
+;; Map height one less than screen height to avoid scrolling
+%assign Map.Height Screen.Height - 1
+%assign Map.Size Map.Width * Map.Height
 
 ;; GLOBAL VARIABLES
 
@@ -25,7 +30,6 @@ CPU 8086
 
 %assign Vars.Begin BootSector.End
 
-%assign Map.Size Width * Height
 ;; TODO: Document these
 %assign Map.Mines Vars.Begin
 %assign Map.Unveiled Map.Mines + Map.Size
@@ -101,19 +105,19 @@ NumCells:
   call LeftIncIfMineAtCell
   lea bx, [di + 1 - Map.Mines.ToUnveiled]
   call RightIncIfMineAtCell
-  lea bx, [di - Width - Map.Mines.ToUnveiled]
+  lea bx, [di - Map.Width - Map.Mines.ToUnveiled]
   call IncIfMineAtCell
-  lea bx, [di + Width - Map.Mines.ToUnveiled]
+  lea bx, [di + Map.Width - Map.Mines.ToUnveiled]
   call IncIfMineAtCell
 
   ; Diagonal
-  lea bx, [di - 1 - Width - Map.Mines.ToUnveiled]
+  lea bx, [di - 1 - Map.Width - Map.Mines.ToUnveiled]
   call LeftIncIfMineAtCell
-  lea bx, [di - 1 + Width - Map.Mines.ToUnveiled]
+  lea bx, [di - 1 + Map.Width - Map.Mines.ToUnveiled]
   call LeftIncIfMineAtCell
-  lea bx, [di + 1 - Width - Map.Mines.ToUnveiled]
+  lea bx, [di + 1 - Map.Width - Map.Mines.ToUnveiled]
   call RightIncIfMineAtCell
-  lea bx, [di + 1 + Width - Map.Mines.ToUnveiled]
+  lea bx, [di + 1 + Map.Width - Map.Mines.ToUnveiled]
   call RightIncIfMineAtCell
 
   cmp ax, '0'
@@ -141,7 +145,7 @@ RightIncIfMineAtCell:
   sub bx, Map.Mines
   mov ax, bx
   cwd
-  mov bx, Width
+  mov bx, Map.Width
   idiv bx
   test dx, dx
   pop dx
@@ -157,9 +161,9 @@ LeftIncIfMineAtCell:
   sub bx, Map.Mines
   mov ax, bx
   cwd
-  mov bx, Width
+  mov bx, Map.Width
   idiv bx
-  cmp dx, Width - 1
+  cmp dx, Map.Width - 1
   pop dx
   pop ax
   pop bx
