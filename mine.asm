@@ -139,8 +139,9 @@ LeftIncIfMineAtCell:
   push dx
   sub bx, Map.Mines
   mov ax, bx
-  mov dx, Width
-  div dx
+  cwd
+  mov bx, Width
+  idiv bx
   test dx, dx
   pop bx
   pop ax
@@ -153,8 +154,9 @@ RightIncIfMineAtCell:
   push dx
   sub bx, Map.Mines
   mov ax, bx
-  mov dx, Width
-  div dx
+  cwd
+  mov bx, Width
+  idiv bx
   cmp dx, Width - 1
   pop bx
   pop ax
