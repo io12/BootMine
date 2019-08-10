@@ -41,13 +41,12 @@ CPU 8086
 ;; TODO: Document these
 %assign Map.Mines Vars.Begin
 %assign Map.Unveiled Map.Mines + Map.Size
-%assign Map.Displayed Map.Unveiled + Map.Size
 
 ;; Distance between Map.Mines and Map.Unveiled
 %assign Map.Mines.ToUnveiled (Map.Unveiled - Map.Mines)
 
 ;; Seed used for random number generation
-%assign RandomSeed Map.Displayed + Map.Size
+%assign RandomSeed Map.Unveiled + Map.Size
 
 %assign Vars.End RandomSeed + WordSize
 
