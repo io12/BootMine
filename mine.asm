@@ -175,12 +175,15 @@ GameLoop:
   inc bp
 
 .SetCursorPos:
+  mov ax, bp
+  mov cl, Map.Width
+  div cl
+  mov dh, al
+  mov dl, ah
   ; Set cursor position
   ; DH = Row
   ; DL = Column
   ; http://www.ctyme.com/intr/rb-0087.htm
-  mov dx, bp
-  xor dh, dh
   mov ah, 0x02
   int 0x10
 
