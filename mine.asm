@@ -131,6 +131,7 @@ PrintMinefield:
   xor dx, dx
   mov ax, 0x1300
   int 0x10
+  cli
   hlt
 
 RightIncIfMineAtCell:
