@@ -229,10 +229,6 @@ Rand:
   pop bx
   ret
 
-HelloWorldStr:
-  db "Hello world!"
-  HelloWorldStrLen equ $ - HelloWorldStr
-
 ;; Print program size at build time
 %assign CodeSize $ - $$
 %warning Code is CodeSize bytes
