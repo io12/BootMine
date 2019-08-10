@@ -143,9 +143,9 @@ LeftIncIfMineAtCell:
   mov bx, Width
   idiv bx
   test dx, dx
-  pop bx
-  pop ax
   pop dx
+  pop ax
+  pop bx
   jz IncIfMineAtCell.RetZero
   jmp IncIfMineAtCell
 RightIncIfMineAtCell:
@@ -158,9 +158,9 @@ RightIncIfMineAtCell:
   mov bx, Width
   idiv bx
   cmp dx, Width - 1
-  pop bx
-  pop ax
   pop dx
+  pop ax
+  pop bx
   je IncIfMineAtCell.RetZero
 ;; TODO: Update comment
 ;;
@@ -219,8 +219,8 @@ Rand:
   xor ax, bx
 
   mov [RandomSeed], ax
-  pop bx
   pop cx
+  pop bx
   ret
 
 HelloWorldStr:
