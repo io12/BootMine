@@ -54,7 +54,7 @@ CPU 8086
 
 org BootSector.Begin
 
-Entry:
+BootMine:
   ; VGA text mode 0x00
   ; 320x200 pixel resolution
   ; 40x25 text resolution
