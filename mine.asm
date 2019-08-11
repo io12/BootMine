@@ -325,7 +325,6 @@ IncIfMineAtCell:
 ;;   * Yes [TODO]
 Flood:
   push bp
-  push bx
 
   ; Base case: bounds check
   cmp bp, Map.Size
@@ -345,25 +344,27 @@ Flood:
   jne .Ret
 
   ; Recursive case: flood adjacent cells
-  mov bx, bp
 
   ; Flood up
+  push bp
   sub bp, Map.Width
   call Flood
-  mov bp, bx
+  pop bp
 
   ; Flood down
+  push bp
   add bp, Map.Width
   call Flood
-  mov bp, bx
+  pop bp
 
   ; Flood left
   call GetCursorPos
   test ah, ah
   jz .Right
+  push bp
   dec bp
   call Flood
-  mov bp, bx
+  pop bp
 
 .Right:
   ; Flood right
@@ -374,7 +375,6 @@ Flood:
   call Flood
 
 .Ret:
-  pop bx
   pop bp
   ret
 
