@@ -241,7 +241,7 @@ TextBufGetCharAt:
   mov dx, TextBuf.Seg
   mov ds, dx
   add bp, bp
-  mov al, [bp]
+  mov al, [ds:bp]
   xor dx, dx
   mov ds, dx
   pop bp
@@ -258,7 +258,7 @@ TextBufSetCharAt:
   mov dx, TextBuf.Seg
   mov ds, dx
   add bp, bp
-  mov [bp], al
+  mov [ds:bp], al
   xor dx, dx
   mov ds, dx
   pop bp
