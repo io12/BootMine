@@ -360,11 +360,12 @@ Flood:
   ; Flood left
   call GetCursorPos
   test dh, dh
-  jz .Ret
+  jz .Right
   dec bp
   call Flood
   mov bp, bx
 
+.Right:
   ; Flood right
   inc bp
   call GetCursorPos
