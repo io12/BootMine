@@ -378,9 +378,20 @@ Flood:
   pop bp
   ret
 
+GameOverStr:
+  db 'GAME OVER'
+%assign GameOverStr.Len $ - GameOverStr
+
 ;; Unveil all the mines, print "GAME OVER" text, and allow restarting
 GameOver:
-  ;; TODO: Finish
+  mov ax, 0x1300
+  mov bx, 0x00c0
+  mov cx, GameOverStr.Len
+  mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
+  mov bp, GameOverStr
+  int 0x10
+  cli
+  hlt
 
 ;; Return a random value in AX
 Rand:
