@@ -138,7 +138,7 @@ NumCells:
 ClearScreen:
   mov cx, Map.Size
   xor di, di
-  mov ax, 0xa0 << 8 | ' '
+  mov ax, 0xa0 << 8 | '.'
   mov dx, TextBuf.Seg
   mov es, dx
 .Loop:
@@ -161,45 +161,53 @@ GameLoop:
   cmp ah, Key.Up
   jne .CmpDown
   sub bp, Map.Width
-  jmp .WrapCursor
+  jmp WrapCursor
 .CmpDown:
   cmp ah, Key.Down
   jne .CmpLeft
   add bp, Map.Width
-  jmp .WrapCursor
+  jmp WrapCursor
 .CmpLeft:
   cmp ah, Key.Left
   jne .CmpRight
   dec bp
-  jmp .WrapCursor
+  jmp WrapCursor
 .CmpRight:
   cmp ah, Key.Right
   jne .CmpSpace
   inc bp
-  jmp .WrapCursor
+  jmp WrapCursor
 .CmpSpace:
   cmp ah, Key.Space
   jne GameLoop
 
-.ClearCell:
+ClearCell:
+  mov al, [bp + Map.Unveiled]
+.CmpEmpty:
+  cmp al, ' '
+  jne .CmpMine
+  call Flood
+  jmp GameLoop
+.CmpMine:
+  cmp al, '*'
+  jne .Digit
+  jmp GameOver
+.Digit:
   ; Video - write character and attribute at cursor position
   ; http://www.ctyme.com/intr/rb-0099.htm
   mov ah, 0x09
-  mov al, [bp + Map.Unveiled]
   mov bx, 0x00a0
   mov cx, 1
   int 0x10
 
-.WrapCursor:
+WrapCursor:
   cmp bp, Map.Size
-  jb .SetCursorPos
+  jb SetCursorPos
   xor bp, bp
 
-.SetCursorPos:
+SetCursorPos:
   xor bx, bx
-  mov ax, bp
-  mov cl, Map.Width
-  div cl
+  call GetCursorPos
   mov dh, al
   mov dl, ah
   ; Set cursor position
@@ -210,6 +218,51 @@ GameLoop:
   int 0x10
 
   jmp GameLoop
+
+;; Split the linear cursor position in BP as COL:ROW in DH:DL
+;;
+;; Clobbered registers:
+;;   * AX
+;;   * CL
+GetCursorPos:
+  mov ax, bp
+  mov cl, Map.Width
+  div cl
+  ret
+
+;; TODO: Use this method in more places
+;;
+;; Get the character at position BP in the text buffer in AL
+;;
+;; Clobbered registers:
+;;   * DX
+TextBufGetCharAt:
+  push bp
+  mov dx, TextBuf.Seg
+  mov ds, dx
+  add bp, bp
+  mov al, [bp]
+  xor dx, dx
+  mov ds, dx
+  pop bp
+  ret
+
+;; TODO: Use this method in more places
+;;
+;; Put the character AL in the text buffer at position BP
+;;
+;; Clobbered registers:
+;;   * DX
+TextBufSetCharAt:
+  push bp
+  mov dx, TextBuf.Seg
+  mov ds, dx
+  add bp, bp
+  mov [bp], al
+  xor dx, dx
+  mov ds, dx
+  pop bp
+  ret
 
 RightIncIfMineAtCell:
   push bx
@@ -264,6 +317,68 @@ IncIfMineAtCell:
 .RetZero:
   ; Outside map bounds. Do not increment.
   ret
+
+;; Flood fill empty cells
+;;
+;; Parameters:
+;;   * BP - Cell index
+;; Clobbered registers:
+;;   * Yes [TODO]
+Flood:
+  push bp
+  ; Base case: bounds check
+  cmp bp, Map.Size
+  jae .Ret
+
+  ; Base case: visited cell
+  call TextBufGetCharAt
+  cmp al, '.'
+  jne .Ret
+
+  ; Body: unveil cell
+  mov al, [bp + Map.Unveiled]
+  call TextBufSetCharAt
+
+  ; Base case: nonempty cell
+  cmp al, ' '
+  jne .Ret
+
+  ; Recursive case: flood adjacent cells
+  ; TODO: Bounds checks here
+  mov bx, bp
+
+  ; Flood: up
+  sub bp, Map.Width
+  call Flood
+  mov bp, bx
+
+  ; Flood: down
+  add bp, Map.Width
+  call Flood
+  mov bp, bx
+
+  ; Flood: left
+  call GetCursorPos
+  test dh, dh
+  jz .Ret
+  dec bp
+  call Flood
+  mov bp, bx
+
+  ; Flood: right
+  inc bp
+  call GetCursorPos
+  test dh, dh
+  jz .Ret
+  call Flood
+
+.Ret:
+  pop bp
+  ret
+
+;; Unveil all the mines, print "GAME OVER" text, and allow restarting
+GameOver:
+  ;; TODO: Finish
 
 ;; Return a random value in AX
 Rand:
