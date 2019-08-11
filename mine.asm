@@ -219,10 +219,9 @@ SetCursorPos:
 
   jmp GameLoop
 
-;; Split the linear cursor position in BP as COL:ROW in DH:DL
+;; Split the linear cursor position in BP as COL:ROW in AH:AL
 ;;
 ;; Clobbered registers:
-;;   * AX
 ;;   * CL
 GetCursorPos:
   mov ax, bp
@@ -359,7 +358,7 @@ Flood:
 
   ; Flood left
   call GetCursorPos
-  test dh, dh
+  test ah, ah
   jz .Right
   dec bp
   call Flood
@@ -369,7 +368,7 @@ Flood:
   ; Flood right
   inc bp
   call GetCursorPos
-  test dh, dh
+  test ah, ah
   jz .Ret
   call Flood
 
