@@ -347,17 +347,17 @@ Flood:
   ; TODO: Bounds checks here
   mov bx, bp
 
-  ; Flood: up
+  ; Flood up
   sub bp, Map.Width
   call Flood
   mov bp, bx
 
-  ; Flood: down
+  ; Flood down
   add bp, Map.Width
   call Flood
   mov bp, bx
 
-  ; Flood: left
+  ; Flood left
   call GetCursorPos
   test dh, dh
   jz .Ret
@@ -365,7 +365,7 @@ Flood:
   call Flood
   mov bp, bx
 
-  ; Flood: right
+  ; Flood right
   inc bp
   call GetCursorPos
   test dh, dh
