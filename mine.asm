@@ -343,7 +343,6 @@ Flood:
   jne .Ret
 
   ; Recursive case: flood adjacent cells
-  ; TODO: Bounds checks here
   mov bx, bp
 
   ; Flood up
