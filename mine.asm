@@ -65,7 +65,6 @@ BootMine:
 
   ; Store number of clock ticks since midnight in CX:DX
   ; http://www.ctyme.com/intr/rb-2271.htm
-  xor ax, ax
   int 0x1a
 
   ; TODO: Remove hard-coded seed
