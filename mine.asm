@@ -193,12 +193,7 @@ ClearCell:
   jne .Digit
   jmp GameOver
 .Digit:
-  ; Video - write character and attribute at cursor position
-  ; http://www.ctyme.com/intr/rb-0099.htm
-  mov ah, 0x09
-  mov bx, 0x00a0
-  mov cx, 1
-  int 0x10
+  call TextBufSetCharAt
 
 WrapCursor:
   cmp bp, Map.Size
