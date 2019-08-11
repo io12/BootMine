@@ -325,6 +325,8 @@ IncIfMineAtCell:
 ;;   * Yes [TODO]
 Flood:
   push bp
+  push bx
+
   ; Base case: bounds check
   cmp bp, Map.Size
   jae .Ret
@@ -372,6 +374,7 @@ Flood:
   call Flood
 
 .Ret:
+  pop bx
   pop bp
   ret
 
