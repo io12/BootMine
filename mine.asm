@@ -80,7 +80,7 @@ PopulateMines:
 .Loop:
   ; ax = Rand() & 0b111 ? 0 : 1
   call Rand
-  test ax, 0b111
+  test al, 0b111
   jz .Mine
 .Empty:
   xor ax, ax
