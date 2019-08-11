@@ -383,6 +383,7 @@ GameOverStr:
 %assign GameOverStr.Len $ - GameOverStr
 
 ;; Unveil all the mines, print "GAME OVER" text, and allow restarting
+;; TODO: Finish this
 GameOver:
   ; Print "GAME OVER" in center of screen
   mov ax, 0x1300
