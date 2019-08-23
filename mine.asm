@@ -1,5 +1,5 @@
 BITS 16
-CPU 8086
+CPU 686
 
 ;; CONSTANTS
 
@@ -63,23 +63,13 @@ BootMine:
   xor ax, ax
   int 0x10
 
-  ; Store number of clock ticks since midnight in CX:DX
-  ; http://www.ctyme.com/intr/rb-2271.htm
-  int 0x1a
-
-  ; TODO: Remove hard-coded seed
-  mov dx, 12345
-
-  ; Seed the RNG with the amount of ticks
-  mov [RandomSeed], dx
-
 ;; Populate Map.Mines with mines
 PopulateMines:
   mov di, Map.Mines
   mov cx, Map.Size
 .Loop:
-  ; ax = Rand() & 0b111 ? 0 : 1
-  call Rand
+  ; ax = rdtsc() & 0b111 ? 0 : 1
+  rdtsc
   test al, 0b111
   jz .Mine
 .Empty:
@@ -390,43 +380,6 @@ GameOver:
   ; Halt forever
   cli
   hlt
-
-;; Return a random value in AX
-Rand:
-  ; 16 bit xorshift
-  ;
-  ;   xs ^= xs << 7;
-  ;   xs ^= xs >> 9;
-  ;   xs ^= xs << 8;
-  ;   return xs;
-  ;
-  ; http://www.retroprogramming.com/2017/07/xorshift-pseudorandom-numbers-in-z80.html
-  push bx
-  push cx
-  mov ax, [RandomSeed]
-
-  ; ax ^= ax << 7
-  mov bx, ax
-  mov cx, 7
-  shl bx, cl
-  xor ax, bx
-
-  ; ax ^= ax >> 9
-  mov bx, ax
-  mov cx, 9
-  shr bx, cl
-  xor ax, bx
-
-  ; ax ^= ax << 8
-  mov bx, ax
-  mov cx, 8
-  shl bx, cl
-  xor ax, bx
-
-  mov [RandomSeed], ax
-  pop cx
-  pop bx
-  ret
 
 ;; Print program size at build time
 %assign CodeSize $ - $$
