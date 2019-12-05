@@ -68,16 +68,10 @@ PopulateMines:
   mov di, Map.Mines
   mov cx, Map.Size
 .Loop:
-  ; ax = rdtsc() & 0b111 ? 0 : 1
+  ; al = rdtsc() & 0b111 ? 0 : 1
   rdtsc
   test al, 0b111
-  jz .Mine
-.Empty:
-  xor ax, ax
-  jmp .WriteCell
-.Mine:
-  mov ax, 1
-.WriteCell:
+  setz al
   stosb
   loop .Loop
 
