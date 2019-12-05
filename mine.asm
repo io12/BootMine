@@ -82,13 +82,10 @@ NumCells:
 .Loop:
   ; Get digit for the cell at DI
   mov al, [di - Map.Mines.ToUnveiled]
-  test ax, ax
-  jz .Empty
-.Mine:
-  mov ax, '*'
-  jmp .WriteCell
-.Empty:
-  mov ax, '0'
+  cmp     al, 1
+  sbb     ax, ax
+  and     ax, '0' - '*'
+  add     ax, '*'
 
   ; Straight
   lea bx, [di - 1 - Map.Mines.ToUnveiled]
