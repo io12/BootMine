@@ -65,8 +65,10 @@ PopulateTextBuf:
   setz dl
   ; ax = dx ? '*' : '0'
   mov ax, dx
+  push bp
   mov bp, '*' - '0'
   mul bp
+  pop bp
   add ax, '0'
 
   push bx
