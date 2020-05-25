@@ -18,6 +18,7 @@ CPU 686
 %define TextBuf.Index(y, x) ((y) * TextBuf.Width * 2 + (x) * 2)
 
 ;; Dirs data info
+;; TODO: make this not hardcoded?
 %assign Dirs.Len 8
 
 ;; Keyboard scan codes
@@ -86,7 +87,8 @@ PopulateTextBuf:
 
 .LoopDir:
   push di
-  add di, [bp + Dirs - 1]
+  movzx ax, BYTE [bp + Dirs - 1]
+  xchg di, ax
   mov al, [di]
 
   test al, '*'
@@ -95,7 +97,6 @@ PopulateTextBuf:
 .LoopDirIsMine:
   pop di
 
-  dec bp
   dec bp
   jnz .LoopDir
 
