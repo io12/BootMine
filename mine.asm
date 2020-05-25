@@ -93,7 +93,7 @@ PopulateTextBuf:
   add di, ax
   mov al, [di]
 
-  test al, '*'
+  cmp al, '*'
   je .LoopDirIsMine
   add [di], dl
 .LoopDirIsMine:
