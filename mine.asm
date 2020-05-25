@@ -49,6 +49,14 @@ BootMine:
   mov es, dx
   mov ds, dx
 
+ZeroTextBuf:
+  xor di, di
+  mov cx, TextBuf.Size
+  mov ax, 0xf000 | '0'
+.Loop:
+  stosw
+  loop .Loop
+
 ;; Populate text buffer
 PopulateTextBuf:
   xor di, di
@@ -60,30 +68,23 @@ PopulateTextBuf:
 .LoopX:
   mov bp, Dirs.Len
 
-  ; dx = (bool) (rdtsc() & 0xf)
+  ; dx = ! (bool) (rdtsc() & 0xf)
   rdtsc
   and ax, 0xf
   setz dl
-  ; ax = dx ? '*' : '0'
-  mov ax, dx
-  push bp
-  mov bp, '*' - '0'
-  imul ax, bp
-  pop bp
-  add ax, '0'
 
   push bx
   push cx
 
-  ; TextBuf[y][x] = al
-  imul di, bx, TextBuf.Width * 2
+  ; TextBuf[y][x] = '*'
   imul cx, cx, 2
   add di, cx
-  stosb
-  dec di
 
   pop cx
   pop bx
+
+  jz .LoopDir
+  mov BYTE [di], '*'
 
 .LoopDir:
   push di
