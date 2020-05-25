@@ -14,11 +14,11 @@ CPU 686
 %assign TextBuf.Seg 0xb800
 %assign TextBuf.Width 40
 %assign TextBuf.Height 25
+%assign TextBuf.Size TextBuf.Width * TextBuf.Height
+%define TextBuf.Index(y, x) ((y) * TextBuf.Width * 2 + (x) * 2)
 
-;; Minefield dimensions
-%assign Map.Width TextBuf.Width
-%assign Map.Height TextBuf.Height
-%assign Map.Size Map.Width * Map.Height
+;; Dirs data info
+%assign Dirs.Len 8
 
 ;; Keyboard scan codes
 ;; http://www.ctyme.com/intr/rb-0045.htm#Table6
@@ -28,29 +28,9 @@ CPU 686
 %assign Key.Left 0x4b
 %assign Key.Right 0x4d
 
-;; GLOBAL VARIABLES
-
-;; TODO: Change global vars to a state struct
-
-;; Global variables are stored after the boot sector at runtime. After the boot
-;; sector, there is 480.5K of memory safe to use.
-;; https://wiki.osdev.org/Memory_Map_(x86)#Overview
-
-%assign Vars.Begin BootSector.End
-
-;; TODO: Document these
-%assign Map.Mines Vars.Begin
-%assign Map.Unveiled Map.Mines + Map.Size
-
-;; Distance between Map.Mines and Map.Unveiled
-%assign Map.Mines.ToUnveiled (Map.Unveiled - Map.Mines)
-
-;; Seed used for random number generation
-%assign RandomSeed Map.Unveiled + Map.Size
-
-%assign Vars.End RandomSeed + WordSize
-
-%assign Vars.Size Vars.End - Vars.Begin
+;; TODO: Delete these
+%assign Map.Unveiled 0
+%assign Map.Mines 0
 
 org BootSector.Begin
 
@@ -63,71 +43,64 @@ BootMine:
   xor ax, ax
   int 0x10
 
-;; Populate Map.Mines with mines
-PopulateMines:
-  mov di, Map.Mines
-  mov cx, Map.Size
-.Loop:
-  ; al = rdtsc() & 0b111 ? 0 : 1
-  rdtsc
-  test al, 0b111
-  setz al
-  stosb
-  loop .Loop
-
-;; Number empty cells with amount of neighboring mines
-NumCells:
-  mov di, Map.Unveiled
-  mov cx, Map.Size
-.Loop:
-  ; Get digit for the cell at DI
-  mov al, [di - Map.Mines.ToUnveiled]
-  cmp     al, 1
-  sbb     ax, ax
-  and     ax, '0' - '*'
-  add     ax, '*'
-
-  ; Straight
-  lea bx, [di - 1 - Map.Mines.ToUnveiled]
-  call LeftIncIfMineAtCell
-  lea bx, [di + 1 - Map.Mines.ToUnveiled]
-  call RightIncIfMineAtCell
-  lea bx, [di - Map.Width - Map.Mines.ToUnveiled]
-  call IncIfMineAtCell
-  lea bx, [di + Map.Width - Map.Mines.ToUnveiled]
-  call IncIfMineAtCell
-
-  ; Diagonal
-  lea bx, [di - 1 - Map.Width - Map.Mines.ToUnveiled]
-  call LeftIncIfMineAtCell
-  lea bx, [di - 1 + Map.Width - Map.Mines.ToUnveiled]
-  call LeftIncIfMineAtCell
-  lea bx, [di + 1 - Map.Width - Map.Mines.ToUnveiled]
-  call RightIncIfMineAtCell
-  lea bx, [di + 1 + Map.Width - Map.Mines.ToUnveiled]
-  call RightIncIfMineAtCell
-
-  cmp ax, '0'
-  jne .WriteCell
-.Zero:
-  mov ax, ' '
-.WriteCell:
-  stosb
-  loop .Loop
-
-ClearScreen:
-  mov cx, Map.Size
-  xor di, di
-  mov ax, 0xa0 << 8 | '.'
+  ; Load VGA text buffer segment into es
   mov dx, TextBuf.Seg
   mov es, dx
-.Loop:
-  stosw
-  loop .Loop
+  mov ds, dx
 
-  xor dx, dx
-  mov es, dx
-  xor bp, bp
+;; Populate text buffer
+PopulateTextBuf:
+  xor di, di
+  mov bx, TextBuf.Height
+
+.LoopY:
+  mov cx, TextBuf.Width
+
+.LoopX:
+  mov bp, Dirs.Len
+
+  ; dx = (bool) (rdtsc() & 0xf)
+  rdtsc
+  and ax, 0xf
+  setz dl
+  ; ax = dx ? '*' : '0'
+  mov ax, dx
+  mov bp, '*' - '0'
+  mul bp
+  add ax, '0'
+
+  push bx
+  push cx
+
+  ; TextBuf[y][x] = al
+  imul di, bx, TextBuf.Width * 2
+  imul cx, cx, 2
+  add di, cx
+  stosb
+  dec di
+
+  pop cx
+  pop bx
+
+.LoopDir:
+  push di
+  add di, [bp + Dirs - 1]
+  mov al, [di]
+
+  test al, '*'
+  je .LoopDirIsMine
+  add [di], dl
+.LoopDirIsMine:
+  pop di
+
+  dec bp
+  dec bp
+  jnz .LoopDir
+
+  loop .LoopX
+
+  dec bx
+  jnz .LoopY
 
 GameLoop:
   ; Get keystroke
@@ -140,12 +113,12 @@ GameLoop:
 .CmpUp:
   cmp ah, Key.Up
   jne .CmpDown
-  sub bp, Map.Width
+  sub bp, TextBuf.Width
   jmp WrapCursor
 .CmpDown:
   cmp ah, Key.Down
   jne .CmpLeft
-  add bp, Map.Width
+  add bp, TextBuf.Width
   jmp WrapCursor
 .CmpLeft:
   cmp ah, Key.Left
@@ -176,7 +149,7 @@ ClearCell:
   call TextBufSetCharAt
 
 WrapCursor:
-  cmp bp, Map.Size
+  cmp bp, TextBuf.Size
   jb SetCursorPos
   xor bp, bp
 
@@ -200,7 +173,7 @@ SetCursorPos:
 ;;   * CL
 GetCursorPos:
   mov ax, bp
-  mov cl, Map.Width
+  mov cl, TextBuf.Width
   div cl
   ret
 
@@ -245,7 +218,7 @@ RightIncIfMineAtCell:
   sub bx, Map.Mines
   mov ax, bx
   cwd
-  mov bx, Map.Width
+  mov bx, TextBuf.Width
   idiv bx
   test dx, dx
   pop dx
@@ -261,9 +234,9 @@ LeftIncIfMineAtCell:
   sub bx, Map.Mines
   mov ax, bx
   cwd
-  mov bx, Map.Width
+  mov bx, TextBuf.Width
   idiv bx
-  cmp dx, Map.Width - 1
+  cmp dx, TextBuf.Width - 1
   pop dx
   pop ax
   pop bx
@@ -283,7 +256,7 @@ IncIfMineAtCell:
   ; Bounds check
   cmp bx, Map.Mines
   jb .RetZero
-  cmp bx, Map.Mines + Map.Size
+  cmp bx, Map.Mines + TextBuf.Size
   jae .RetZero
   ; Within map bounds. Dereference and add map pointer.
   add al, [bx]
@@ -302,7 +275,7 @@ Flood:
   push bp
 
   ; Base case: bounds check
-  cmp bp, Map.Size
+  cmp bp, TextBuf.Size
   jae .Ret
 
   ; Base case: visited cell
@@ -322,13 +295,13 @@ Flood:
 
   ; Flood up
   push bp
-  sub bp, Map.Width
+  sub bp, TextBuf.Width
   call Flood
   pop bp
 
   ; Flood down
   push bp
-  add bp, Map.Width
+  add bp, TextBuf.Width
   call Flood
   pop bp
 
@@ -352,6 +325,16 @@ Flood:
 .Ret:
   pop bp
   ret
+
+Dirs:
+  db TextBuf.Index(-1, -1)
+  db TextBuf.Index(-1,  0)
+  db TextBuf.Index(-1, +1)
+  db TextBuf.Index( 0, +1)
+  db TextBuf.Index(+1, +1)
+  db TextBuf.Index(+1,  0)
+  db TextBuf.Index(+1, -1)
+  db TextBuf.Index( 0, -1)
 
 GameOverStr:
   db 'GAME OVER'
