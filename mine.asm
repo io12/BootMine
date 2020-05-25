@@ -68,7 +68,7 @@ PopulateTextBuf:
   mov ax, dx
   push bp
   mov bp, '*' - '0'
-  mul bp
+  imul ax, bp
   pop bp
   add ax, '0'
 
