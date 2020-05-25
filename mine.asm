@@ -52,10 +52,10 @@ BootMine:
 ;; Populate text buffer
 PopulateTextBuf:
   xor di, di
-  mov bx, TextBuf.Height
+  mov bx, TextBuf.Height - 2
 
 .LoopY:
-  mov cx, TextBuf.Width
+  mov cx, TextBuf.Width - 2
 
 .LoopX:
   mov bp, Dirs.Len
@@ -87,8 +87,8 @@ PopulateTextBuf:
 
 .LoopDir:
   push di
-  movzx ax, BYTE [bp + Dirs - 1]
-  xchg di, ax
+  movsx ax, BYTE [bp + Dirs - 1]
+  add di, ax
   mov al, [di]
 
   test al, '*'
