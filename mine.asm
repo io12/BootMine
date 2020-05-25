@@ -68,22 +68,23 @@ PopulateTextBuf:
 .LoopX:
   mov bp, Dirs.Len
 
-  ; dx = ! (bool) (rdtsc() & 0xf)
-  rdtsc
-  and ax, 0xf
-  setz dl
-
   push bx
   push cx
 
-  ; TextBuf[y][x] = '*'
+  ; di = &TextBuf[y][x]
+  imul di, bx, TextBuf.Width * 2
   imul cx, cx, 2
   add di, cx
 
   pop cx
   pop bx
 
-  jz .LoopDir
+  ; dx = ! (bool) (rdtsc() & 0xf)
+  rdtsc
+  and ax, 0xf
+  setz dl
+
+  jnz .LoopDir
   mov BYTE [di], '*'
 
 .LoopDir:
