@@ -228,6 +228,10 @@ Flood:
   cmp al, '.'
   je .Ret
 
+  ; Base case: this is a bomb
+  cmp al, '*'
+  je .Ret
+
   ; Body: unveil cell
   mov byte [di + 1], 0x24
 
@@ -263,6 +267,42 @@ Flood:
   inc cx
   call Flood
   pop cx
+
+  ; Flood up-left
+  push bx
+  push cx
+  dec bx
+  dec cx
+  call Flood
+  pop cx
+  pop bx
+
+  ; Flood up-right
+  push bx
+  push cx
+  dec bx
+  inc cx
+  call Flood
+  pop cx
+  pop bx
+
+  ; Flood down-left
+  push bx
+  push cx
+  inc bx
+  dec cx
+  call Flood
+  pop cx
+  pop bx
+
+  ; Flood down-right
+  push bx
+  push cx
+  inc bx
+  inc cx
+  call Flood
+  pop cx
+  pop bx
 
 .Ret:
   ret
