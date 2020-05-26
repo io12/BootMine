@@ -203,73 +203,51 @@ GetTextBufIndex:
   pop cx
   ret
 
-;; TODO: Use this method in more places
-;;
-;; Get the character at position BP in the text buffer in AL
-;;
-;; Clobbered registers:
-;;   * DX
-TextBufGetCharAt:
-  push bp
-  mov dx, TextBuf.Seg
-  mov ds, dx
-  add bp, bp
-  mov al, [ds:bp]
-  xor dx, dx
-  mov ds, dx
-  pop bp
-  ret
-
-;; TODO: Use this method in more places
-;;
-;; Put the character AL in the text buffer at position BP
-;;
-;; Clobbered registers:
-;;   * DX
-TextBufSetCharAt:
-  push bp
-  mov dx, TextBuf.Seg
-  mov ds, dx
-  add bp, bp
-  mov [ds:bp], al
-  xor dx, dx
-  mov ds, dx
-  pop bp
-  ret
-
 ;; Flood fill empty cells
 ;;
 ;; Parameters:
-;;   * BP - Cell index
+;;   * al - cell value
+;;   * bx - cell y coordinate
+;;   * cx - cell x coordinate
+;;   * di - cell pointer in text buffer
 ;; Clobbered registers:
 ;;   * Yes [TODO]
 Flood:
-  push bp
-
-  ; Base case: bounds check
-  cmp bp, TextBuf.Size
+  ; Base case: bounds check y
+  cmp bx, TextBuf.Height
   jae .Ret
 
-  ; Base case: visited cell
-  call TextBufGetCharAt
+  ; Base case: bounds check x
+  cmp cx, TextBuf.Width
+  jae .Ret
+
+  ; Base case: we visited this cell already
   cmp al, '.'
-  jne .Ret
+  je .Ret
 
   ; Body: unveil cell
-  mov al, [bp + Map.Unveiled]
-  call TextBufSetCharAt
+  mov byte [di + 1], 0x24
 
   ; Base case: nonempty cell
-  cmp al, ' '
+  cmp al, '0'
   jne .Ret
+
+  ; Body: mark cell
+  mov byte [di], '.'
 
   ; Recursive case: flood adjacent cells
 
   ; Flood up
-  push bp
+  push al
+  push bx
+  push cx
+  push di
   sub bp, TextBuf.Width
   call Flood
-  pop bp
+  push di
+  push cx
+  push bx
+  push al
 
   ; Flood down
   push bp
@@ -295,7 +273,6 @@ Flood:
   call Flood
 
 .Ret:
-  pop bp
   ret
 
 Dirs:
