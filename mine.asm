@@ -239,39 +239,30 @@ Flood:
   mov byte [di], '.'
 
   ; Recursive case: flood adjacent cells
-  ; TODO: can the push/pops be removed for unmodified regs?
 
   ; Flood up
   push bx
-  push cx
   dec bx
   call Flood
-  push cx
-  push bx
+  pop bx
 
   ; Flood down
   push bx
-  push cx
   inc bx
   call Flood
-  push cx
-  push bx
+  pop bx
 
   ; Flood left
-  push bx
   push cx
   dec cx
   call Flood
-  push cx
-  push bx
+  pop cx
 
   ; Flood right
-  push bx
   push cx
   inc cx
   call Flood
-  push cx
-  push bx
+  pop cx
 
 .Ret:
   ret
