@@ -245,64 +245,52 @@ Flood:
   ; Recursive case: flood adjacent cells
 
   ; Flood up
-  push bx
   dec bx
   call Flood
-  pop bx
+  inc bx
 
   ; Flood down
-  push bx
   inc bx
   call Flood
-  pop bx
+  dec bx
 
   ; Flood left
-  push cx
   dec cx
   call Flood
-  pop cx
+  inc cx
 
   ; Flood right
-  push cx
   inc cx
   call Flood
-  pop cx
+  dec cx
 
   ; Flood up-left
-  push bx
-  push cx
   dec bx
   dec cx
   call Flood
-  pop cx
-  pop bx
+  inc cx
+  inc bx
 
   ; Flood up-right
-  push bx
-  push cx
   dec bx
   inc cx
   call Flood
-  pop cx
-  pop bx
+  dec cx
+  inc bx
 
   ; Flood down-left
-  push bx
-  push cx
   inc bx
   dec cx
   call Flood
-  pop cx
-  pop bx
+  inc cx
+  dec bx
 
   ; Flood down-right
-  push bx
-  push cx
   inc bx
   inc cx
   call Flood
-  pop cx
-  pop bx
+  dec cx
+  dec bx
 
 .Ret:
   ret
