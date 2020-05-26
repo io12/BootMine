@@ -52,7 +52,7 @@ BootMine:
 ZeroTextBuf:
   xor di, di
   mov cx, TextBuf.Size
-  mov ax, 0xf000 | '0'
+  mov ax, 0x7700 | '0'
 .Loop:
   stosw
   loop .Loop
@@ -115,25 +115,29 @@ GameLoop:
   xor ax, ax
   int 0x16
 
+  ; bx and cx zeroed from loop above
+  ; bx = y coord
+  ; cx = x coord
+
 .CmpUp:
   cmp ah, Key.Up
   jne .CmpDown
-  sub bp, TextBuf.Width
+  dec bx
   jmp WrapCursor
 .CmpDown:
   cmp ah, Key.Down
   jne .CmpLeft
-  add bp, TextBuf.Width
+  inc bx
   jmp WrapCursor
 .CmpLeft:
   cmp ah, Key.Left
   jne .CmpRight
-  dec bp
+  dec cx
   jmp WrapCursor
 .CmpRight:
   cmp ah, Key.Right
   jne .CmpSpace
-  inc bp
+  inc cx
   jmp WrapCursor
 .CmpSpace:
   cmp ah, Key.Space
@@ -154,15 +158,20 @@ ClearCell:
   call TextBufSetCharAt
 
 WrapCursor:
-  cmp bp, TextBuf.Size
-  jb SetCursorPos
-  xor bp, bp
+  ; Wrap y cursor
+  cmp bx, TextBuf.Height - 2
+  jae .X
+  xor bx, bx
+
+.X:
+  ; Wrap x cursor
+  cmp cx, TextBuf.Height - 2
+  jae SetCursorPos
+  xor cx, cx
 
 SetCursorPos:
-  xor bx, bx
-  call GetCursorPos
-  mov dh, al
-  mov dl, ah
+  mov dh, bl
+  mov dl, cl
   ; Set cursor position
   ; DH = Row
   ; DL = Column
