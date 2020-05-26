@@ -72,9 +72,7 @@ PopulateTextBuf:
   push cx
 
   ; di = &TextBuf[y][x]
-  imul di, bx, TextBuf.Width * 2
-  imul cx, cx, 2
-  add di, cx
+  call GetTextBufIndex
 
   pop cx
   pop bx
@@ -114,6 +112,9 @@ GameLoop:
   ; http://www.ctyme.com/intr/rb-1754.htm
   xor ax, ax
   int 0x16
+
+  call GetTextBufIndex
+  mov byte [di+1], 0x77
 
   ; bx and cx zeroed from loop above
   ; bx = y coord
@@ -159,25 +160,19 @@ ClearCell:
 
 WrapCursor:
   ; Wrap y cursor
-  cmp bx, TextBuf.Height - 2
-  jae .X
+  cmp bx, TextBuf.Height
+  jb .X
   xor bx, bx
 
 .X:
   ; Wrap x cursor
-  cmp cx, TextBuf.Height - 2
-  jae SetCursorPos
+  cmp cx, TextBuf.Width
+  jb SetCursorPos
   xor cx, cx
 
 SetCursorPos:
-  mov dh, bl
-  mov dl, cl
-  ; Set cursor position
-  ; DH = Row
-  ; DL = Column
-  ; http://www.ctyme.com/intr/rb-0087.htm
-  mov ah, 0x02
-  int 0x10
+  call GetTextBufIndex
+  mov byte [di+1], 0x88
 
   jmp GameLoop
 
@@ -189,6 +184,15 @@ GetCursorPos:
   mov ax, bp
   mov cl, TextBuf.Width
   div cl
+  ret
+
+;; di = &TextBuf[bx = y][cx = x]
+GetTextBufIndex:
+  push cx
+  imul di, bx, TextBuf.Width * 2
+  imul cx, cx, 2
+  add di, cx
+  pop cx
   ret
 
 ;; TODO: Use this method in more places
