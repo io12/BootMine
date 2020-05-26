@@ -150,9 +150,9 @@ GameLoop:
   jne GameLoop
 
 ClearCell:
-  mov al, [bp + Map.Unveiled]
+  mov ax, [di]
 .CmpEmpty:
-  cmp al, ' '
+  cmp al, '0'
   jne .CmpMine
   call Flood
   jmp GameLoop
@@ -161,7 +161,9 @@ ClearCell:
   jne .Digit
   jmp GameOver
 .Digit:
-  call TextBufSetCharAt
+  mov dl, 0x24
+  mov [di + 1], dl
+  jmp GameLoop
 
 WrapCursor:
   ; Wrap y cursor
