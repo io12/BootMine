@@ -206,13 +206,16 @@ GetTextBufIndex:
 ;; Flood fill empty cells
 ;;
 ;; Parameters:
-;;   * al - cell value
 ;;   * bx - cell y coordinate
 ;;   * cx - cell x coordinate
-;;   * di - cell pointer in text buffer
 ;; Clobbered registers:
-;;   * Yes [TODO]
+;;   * ax - cell value
+;;   * di - cell pointer in text buffer
 Flood:
+  ; Init: get cell pointer and value
+  call GetTextBufIndex
+  mov ax, [di]
+
   ; Base case: bounds check y
   cmp bx, TextBuf.Height
   jae .Ret
@@ -236,41 +239,39 @@ Flood:
   mov byte [di], '.'
 
   ; Recursive case: flood adjacent cells
+  ; TODO: can the push/pops be removed for unmodified regs?
 
   ; Flood up
-  push al
   push bx
   push cx
-  push di
-  sub bp, TextBuf.Width
+  dec bx
   call Flood
-  push di
   push cx
   push bx
-  push al
 
   ; Flood down
-  push bp
-  add bp, TextBuf.Width
+  push bx
+  push cx
+  inc bx
   call Flood
-  pop bp
+  push cx
+  push bx
 
   ; Flood left
-  call GetCursorPos
-  test ah, ah
-  jz .Right
-  push bp
-  dec bp
+  push bx
+  push cx
+  dec cx
   call Flood
-  pop bp
+  push cx
+  push bx
 
-.Right:
   ; Flood right
-  inc bp
-  call GetCursorPos
-  test ah, ah
-  jz .Ret
+  push bx
+  push cx
+  inc cx
   call Flood
+  push cx
+  push bx
 
 .Ret:
   ret
