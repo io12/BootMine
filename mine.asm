@@ -105,6 +105,11 @@ PopulateTextBuf:
   dec bx
   jnz .LoopY
 
+;; Done populating text buf
+
+  ; Set the initial cursor color for game loop
+  mov dl, 0x77
+
 GameLoop:
   ; Get keystroke
   ; AH = BIOS scan code
@@ -113,12 +118,12 @@ GameLoop:
   xor ax, ax
   int 0x16
 
-  call GetTextBufIndex
-  mov byte [di+1], 0x77
-
   ; bx and cx zeroed from loop above
   ; bx = y coord
   ; cx = x coord
+
+  call GetTextBufIndex
+  mov [di + 1], dl
 
 .CmpUp:
   cmp ah, Key.Up
@@ -172,7 +177,8 @@ WrapCursor:
 
 SetCursorPos:
   call GetTextBufIndex
-  mov byte [di+1], 0x88
+  mov dl, 0x88
+  xchg dl, [di + 1]
 
   jmp GameLoop
 
