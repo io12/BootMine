@@ -229,60 +229,6 @@ TextBufSetCharAt:
   pop bp
   ret
 
-RightIncIfMineAtCell:
-  push bx
-  push ax
-  push dx
-  sub bx, Map.Mines
-  mov ax, bx
-  cwd
-  mov bx, TextBuf.Width
-  idiv bx
-  test dx, dx
-  pop dx
-  pop ax
-  pop bx
-  jz IncIfMineAtCell.RetZero
-  jmp IncIfMineAtCell
-
-LeftIncIfMineAtCell:
-  push bx
-  push ax
-  push dx
-  sub bx, Map.Mines
-  mov ax, bx
-  cwd
-  mov bx, TextBuf.Width
-  idiv bx
-  cmp dx, TextBuf.Width - 1
-  pop dx
-  pop ax
-  pop bx
-  je IncIfMineAtCell.RetZero
-;; TODO: Update comment
-;;
-;; Increment AX if there is a mine in Map.Mines at index BX, where BX is a
-;; pointer inside Map.Mines. In the case where BX is outside Map.Mines, AX is
-;; NOT incremented.
-;;
-;; Parameters
-;;   * BX - Pointer inside Map.Mines
-;; Clobbered registers
-;;   * AX - either incremented or unchanged, depending on whether there is or
-;;          isn't a mine at BX, respectively
-IncIfMineAtCell:
-  ; Bounds check
-  cmp bx, Map.Mines
-  jb .RetZero
-  cmp bx, Map.Mines + TextBuf.Size
-  jae .RetZero
-  ; Within map bounds. Dereference and add map pointer.
-  add al, [bx]
-  ret
-.RetZero:
-  ; Outside map bounds. Do not increment.
-  ret
-
 ;; Flood fill empty cells
 ;;
 ;; Parameters:
