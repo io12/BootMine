@@ -1,7 +1,7 @@
-BITS 16
-CPU 686
+bits 16
+cpu 686
 
-;; CONSTANTS
+;; Constants
 
 ;; Boot sector load address
 %assign BootSector.Begin 0x7c00
@@ -79,11 +79,11 @@ PopulateTextBuf:
   setz dl
 
   jnz .LoopDir
-  mov BYTE [di], '*'
+  mov byte [di], '*'
 
 .LoopDir:
   push di
-  movsx ax, BYTE [bp + Dirs - 1]
+  movsx ax, byte [bp + Dirs - 1]
   add di, ax
   mov al, [di]
 
@@ -108,8 +108,8 @@ PopulateTextBuf:
 
 GameLoop:
   ; Get keystroke
-  ; AH = BIOS scan code
-  ; AL = ASCII character
+  ; ah = BIOS scan code
+  ; al = ASCII character
   ; http://www.ctyme.com/intr/rb-1754.htm
   xor ax, ax
   int 0x16
@@ -180,10 +180,10 @@ SetCursorPos:
 
   jmp GameLoop
 
-;; Split the linear cursor position in BP as COL:ROW in AH:AL
+;; Split the linear cursor position in bp as col:row in ah:al
 ;;
 ;; Clobbered registers:
-;;   * CL
+;;   * cl
 GetCursorPos:
   mov ax, bp
   mov cl, TextBuf.Width
