@@ -151,7 +151,7 @@ GameLoop:
 
 ClearCell:
   mov ax, [di]
-  mov dl, 0x24
+  mov dl, 0x87
 .CmpEmpty:
   cmp al, '0'
   jne .CmpMine
@@ -179,7 +179,7 @@ WrapCursor:
 
 SetCursorPos:
   call GetTextBufIndex
-  mov dl, 0x88
+  mov dl, 0x00
   xchg dl, [di + 1]
 
   jmp GameLoop
@@ -233,7 +233,7 @@ Flood:
   je .Ret
 
   ; Body: unveil cell
-  mov byte [di + 1], 0x24
+  mov byte [di + 1], 0x87
 
   ; Base case: nonempty cell
   cmp al, '0'
