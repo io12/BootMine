@@ -29,10 +29,6 @@ CPU 686
 %assign Key.Left 0x4b
 %assign Key.Right 0x4d
 
-;; TODO: Delete these
-%assign Map.Unveiled 0
-%assign Map.Mines 0
-
 org BootSector.Begin
 
 BootMine:
