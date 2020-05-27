@@ -151,6 +151,7 @@ GameLoop:
 
 ClearCell:
   mov ax, [di]
+  mov dl, 0x24
 .CmpEmpty:
   cmp al, '0'
   jne .CmpMine
@@ -161,7 +162,6 @@ ClearCell:
   jne .Digit
   jmp GameOver
 .Digit:
-  mov dl, 0x24
   mov [di + 1], dl
   jmp GameLoop
 
