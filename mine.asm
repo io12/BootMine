@@ -318,6 +318,9 @@ GameOver:
   mov cx, GameOverStr.Len
   mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
   mov bp, GameOverStr
+  ; es = 0
+  xor di, di
+  mov es, di
   int 0x10
 
   ; Halt forever
