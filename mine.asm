@@ -180,16 +180,6 @@ SetCursorPos:
 
   jmp GameLoop
 
-;; Split the linear cursor position in bp as col:row in ah:al
-;;
-;; Clobbered registers:
-;;   * cl
-GetCursorPos:
-  mov ax, bp
-  mov cl, TextBuf.Width
-  div cl
-  ret
-
 ;; di = &TextBuf[bx = y][cx = x]
 GetTextBufIndex:
   push cx
