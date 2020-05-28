@@ -29,6 +29,10 @@ cpu 686
 %assign Key.Left 0x4b
 %assign Key.Right 0x4d
 
+%define VgaChar(color, ascii) (((color) << 8) | (ascii))
+
+%assign Color.Veiled 0x77
+
 org BootSector.Begin
 
 BootMine:
@@ -48,7 +52,7 @@ BootMine:
 ZeroTextBuf:
   xor di, di
   mov cx, TextBuf.Size
-  mov ax, 0x7700 | '0'
+  mov ax, VgaChar(Color.Veiled, '0')
 .Loop:
   stosw
   loop .Loop
@@ -104,9 +108,25 @@ PopulateTextBuf:
 ;; Done populating text buf
 
   ; Set the initial cursor color for game loop
-  mov dl, 0x77
+  mov dl, Color.Veiled
 
 GameLoop:
+  ; Detect win (a win occurs when the only unveiled cells are bombs)
+  xor si, si
+  push cx
+  mov cx, TextBuf.Size
+.DetectWinLoop:
+  lodsw
+  cmp ah, Color.Veiled
+  jne .DetectWinLoopEnd
+  cmp al, '*'
+  jne .NotGameWin
+.DetectWinLoopEnd:
+  loop .DetectWinLoop
+  jmp GameWin
+.NotGameWin:
+  pop cx
+
   ; Get keystroke
   ; ah = BIOS scan code
   ; al = ASCII character
@@ -114,11 +134,13 @@ GameLoop:
   xor ax, ax
   int 0x16
 
-  ; bx and cx zeroed from loop above
+  ; bx and cx zeroed from PopulateTextBuf loops above
   ; bx = y coord
   ; cx = x coord
 
+  ; di = cell pointer
   call GetTextBufIndex
+  ; Apply saved cell color
   mov [di + 1], dl
 
 .CmpUp:
@@ -294,6 +316,10 @@ Dirs:
 GameOverStr:
   db 'GAME OVER'
 %assign GameOverStr.Len $ - GameOverStr
+
+;; TODO: Write this
+GameWin:
+  jmp BootMine
 
 ;; Unveil all the mines, print "GAME OVER" text, and allow restarting
 ;; TODO: Finish this
