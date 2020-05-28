@@ -34,6 +34,8 @@ cpu 686
 %assign Color.Veiled 0x77
 %assign Color.Unveiled 0x87
 %assign Color.Cursor 0x00
+%assign Color.GameWinText 0x20
+%assign Color.GameOverText 0xc0
 
 org BootSector.Begin
 
@@ -318,23 +320,31 @@ Dirs:
   db TextBuf.Index(+1, -1)
   db TextBuf.Index( 0, -1)
 
+GameWinStr:
+  db 'GAME WIN'
+%assign GameWinStr.Len $ - GameWinStr
+
 GameOverStr:
   db 'GAME OVER'
 %assign GameOverStr.Len $ - GameOverStr
 
-;; TODO: Write this
+;; Show game win screen
 GameWin:
-  jmp BootMine
+  mov cx, GameWinStr.Len
+  mov bp, GameWinStr
+  mov bx, Color.GameWinText
+  jmp GameEndHelper
 
-;; Unveil all the mines, print "GAME OVER" text, and allow restarting
-;; TODO: Finish this
+;; Show game over screen
 GameOver:
-  ; Print "GAME OVER" in center of screen
-  mov ax, 0x1300
-  mov bx, 0x00c0
   mov cx, GameOverStr.Len
-  mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
   mov bp, GameOverStr
+  mov bx, Color.GameOverText
+
+;; Helper code for GameWin and GameOver
+GameEndHelper:
+  mov ax, 0x1300
+  mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
   ; es = 0
   xor di, di
   mov es, di
