@@ -32,7 +32,7 @@ cpu 686
 %define VgaChar(color, ascii) (((color) << 8) | (ascii))
 
 %assign Color.Veiled 0x77
-%assign Color.Unveiled 0x87
+%assign Color.Unveiled 0xf0
 %assign Color.Cursor 0x00
 %assign Color.GameWinText 0x20
 %assign Color.GameOverText 0xc0
@@ -176,8 +176,7 @@ GameLoop:
 
 ClearCell:
   mov ax, [di]
-  mov dl, Color.Unveiled
-  mov [di + 1], dl
+  call UnveilCell
 .CmpEmpty:
   cmp al, '0'
   jne .CmpMine
@@ -218,6 +217,20 @@ GetTextBufIndex:
   pop cx
   ret
 
+;; Unveil a cell so it is visible on the screen
+;;
+;; Parameters:
+;;   * di - cell pointer in text buffer
+;;   * al - cell ASCII value
+;; Returns:
+;;   * dl - written VGA color code
+UnveilCell:
+  ; Use xor magic to make the cells colored
+  mov dl, al
+  xor dl, '0' ^ Color.Unveiled
+  mov [di + 1], dl
+  ret
+
 ;; Flood fill empty cells
 ;;
 ;; Parameters:
@@ -240,7 +253,7 @@ Flood:
   jae .Ret
 
   ; Base case: we visited this cell already
-  cmp al, '.'
+  cmp al, ' '
   je .Ret
 
   ; Base case: this is a bomb
@@ -248,14 +261,14 @@ Flood:
   je .Ret
 
   ; Body: unveil cell
-  mov byte [di + 1], Color.Unveiled
+  call UnveilCell
 
   ; Base case: nonempty cell
   cmp al, '0'
   jne .Ret
 
-  ; Body: mark cell
-  mov byte [di], '.'
+  ; Body: mark cell as visited and empty
+  mov byte [di], ' '
 
   ; Recursive case: flood adjacent cells
 
