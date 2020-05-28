@@ -113,22 +113,6 @@ PopulateTextBuf:
   mov dl, Color.Veiled
 
 GameLoop:
-  ; Detect win (a win occurs when the only unveiled cells are bombs)
-  xor si, si
-  push cx
-  mov cx, TextBuf.Size
-.DetectWinLoop:
-  lodsw
-  cmp ah, Color.Veiled
-  jne .DetectWinLoopEnd
-  cmp al, '*'
-  jne .NotGameWin
-.DetectWinLoopEnd:
-  loop .DetectWinLoop
-  jmp GameWin
-.NotGameWin:
-  pop cx
-
   ; Get keystroke
   ; ah = BIOS scan code
   ; al = ASCII character
@@ -145,6 +129,25 @@ GameLoop:
   ; Apply saved cell color
   mov [di + 1], dl
 
+  ; Detect win (a win occurs when the only unveiled cells are bombs)
+  xor si, si
+  push ax
+  push cx
+  mov cx, TextBuf.Size
+.DetectWinLoop:
+  lodsw
+  cmp ah, Color.Veiled
+  jne .DetectWinLoopEnd
+  cmp al, '*'
+  jne .NotGameWin
+.DetectWinLoopEnd:
+  loop .DetectWinLoop
+  jmp GameWin
+.NotGameWin:
+  pop cx
+  pop ax
+
+  ; Process key press
 .CmpUp:
   cmp ah, Key.Up
   jne .CmpDown
