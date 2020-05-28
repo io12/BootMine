@@ -33,6 +33,7 @@ cpu 686
 
 %assign Color.Veiled 0x77
 %assign Color.Unveiled 0x87
+%assign Color.Cursor 0x00
 
 org BootSector.Begin
 
@@ -198,7 +199,7 @@ WrapCursor:
 
 SetCursorPos:
   call GetTextBufIndex
-  mov dl, 0x00
+  mov dl, Color.Cursor
   xchg dl, [di + 1]
 
   jmp GameLoop
