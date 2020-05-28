@@ -32,6 +32,7 @@ cpu 686
 %define VgaChar(color, ascii) (((color) << 8) | (ascii))
 
 %assign Color.Veiled 0x77
+%assign Color.Unveiled 0x87
 
 org BootSector.Begin
 
@@ -169,7 +170,7 @@ GameLoop:
 
 ClearCell:
   mov ax, [di]
-  mov dl, 0x87
+  mov dl, Color.Unveiled
   mov [di + 1], dl
 .CmpEmpty:
   cmp al, '0'
@@ -241,7 +242,7 @@ Flood:
   je .Ret
 
   ; Body: unveil cell
-  mov byte [di + 1], 0x87
+  mov byte [di + 1], Color.Unveiled
 
   ; Base case: nonempty cell
   cmp al, '0'
