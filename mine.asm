@@ -83,7 +83,7 @@ PopulateTextBuf:
 
   ; dx = ! (bool) (rdtsc() & 0xf)
   rdtsc
-  and ax, 0xf
+  and al, 0xf
   setz dl
 
   jnz .LoopDir
