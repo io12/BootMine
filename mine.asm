@@ -28,6 +28,7 @@ cpu 686
 %assign Key.ScanCode.Down 0x50
 %assign Key.ScanCode.Left 0x4b
 %assign Key.ScanCode.Right 0x4d
+%assign Key.ScanCode.Enter 0x1c
 
 ;; Keyboard ASCII codes
 %assign Key.Ascii.RestartGame 'r'
@@ -37,6 +38,7 @@ cpu 686
 %assign Color.Veiled 0x77
 %assign Color.Unveiled 0xf0
 %assign Color.Cursor 0x00
+%assign Color.Flag 0xcc
 %assign Color.GameWinText 0x20
 %assign Color.GameOverText 0xc0
 
@@ -134,46 +136,57 @@ GameLoop:
   ; Apply saved cell color
   mov [di + 1], dl
 
-  ; Detect win (a win occurs when the only unveiled cells are bombs)
+  ; Detect win (a win occurs when every veiled cell is a mine)
+DetectWin:
   xor si, si
   push ax
   push cx
   mov cx, TextBuf.Size
-.DetectWinLoop:
+.Loop:
   lodsw
   cmp ah, Color.Veiled
-  jne .DetectWinLoopEnd
+  je .CheckMine
+  cmp ah, Color.Flag
+  jne .Continue
+.CheckMine:
   cmp al, '*'
-  jne .NotGameWin
-.DetectWinLoopEnd:
-  loop .DetectWinLoop
+  jne .Break
+.Continue:
+  loop .Loop
   jmp GameWin
-.NotGameWin:
+.Break:
   pop cx
   pop ax
 
   ; Process key press
-.CmpUp:
+CmpUp:
   cmp ah, Key.ScanCode.Up
-  jne .CmpDown
+  jne CmpDown
   dec bx
   jmp WrapCursor
-.CmpDown:
+CmpDown:
   cmp ah, Key.ScanCode.Down
-  jne .CmpLeft
+  jne CmpLeft
   inc bx
   jmp WrapCursor
-.CmpLeft:
+CmpLeft:
   cmp ah, Key.ScanCode.Left
-  jne .CmpRight
+  jne CmpRight
   dec cx
   jmp WrapCursor
-.CmpRight:
+CmpRight:
   cmp ah, Key.ScanCode.Right
-  jne .CmpSpace
+  jne CmpEnter
   inc cx
   jmp WrapCursor
-.CmpSpace:
+CmpEnter:
+  cmp ah, Key.ScanCode.Enter
+  jne CmpSpace
+  ; Place flag
+  mov dl, Color.Flag
+  mov [di + 1], dl
+  jmp GameLoop
+CmpSpace:
   cmp ah, Key.ScanCode.Space
   jne GameLoop
 
