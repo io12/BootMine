@@ -23,11 +23,14 @@ cpu 686
 
 ;; Keyboard scan codes
 ;; http://www.ctyme.com/intr/rb-0045.htm#Table6
-%assign Key.Space 0x39
-%assign Key.Up 0x48
-%assign Key.Down 0x50
-%assign Key.Left 0x4b
-%assign Key.Right 0x4d
+%assign Key.ScanCode.Space 0x39
+%assign Key.ScanCode.Up 0x48
+%assign Key.ScanCode.Down 0x50
+%assign Key.ScanCode.Left 0x4b
+%assign Key.ScanCode.Right 0x4d
+
+;; Keyboard ASCII codes
+%assign Key.Ascii.RestartGame 'r'
 
 %define VgaChar(color, ascii) (((color) << 8) | (ascii))
 
@@ -151,27 +154,27 @@ GameLoop:
 
   ; Process key press
 .CmpUp:
-  cmp ah, Key.Up
+  cmp ah, Key.ScanCode.Up
   jne .CmpDown
   dec bx
   jmp WrapCursor
 .CmpDown:
-  cmp ah, Key.Down
+  cmp ah, Key.ScanCode.Down
   jne .CmpLeft
   inc bx
   jmp WrapCursor
 .CmpLeft:
-  cmp ah, Key.Left
+  cmp ah, Key.ScanCode.Left
   jne .CmpRight
   dec cx
   jmp WrapCursor
 .CmpRight:
-  cmp ah, Key.Right
+  cmp ah, Key.ScanCode.Right
   jne .CmpSpace
   inc cx
   jmp WrapCursor
 .CmpSpace:
-  cmp ah, Key.Space
+  cmp ah, Key.ScanCode.Space
   jne GameLoop
 
 ClearCell:
@@ -363,9 +366,14 @@ GameEndHelper:
   mov es, di
   int 0x10
 
-  ; Halt forever
-  cli
-  hlt
+;; Wait for restart key to be pressed, then restart game
+WaitRestart:
+  xor ax, ax
+  int 0x16
+  cmp al, Key.Ascii.RestartGame
+  jne WaitRestart
+  jmp BootMine
+
 
 ;; Print program size at build time
 %assign CodeSize $ - $$
