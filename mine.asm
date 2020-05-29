@@ -60,6 +60,14 @@ cpu 686
 %assign Color.GameWinText 0x20
 %assign Color.GameOverText 0xc0
 
+;; This value is used to calculate bomb frequency. The probability that any
+;; given cell is a bomb is (1/2)^n, where n = "number of ones in the binary
+;; representation of BombFreq".
+;;
+;; In other words, when BombFreq=0, every cell is a bomb, and appending a one
+;; halves the amount of bombs.
+%assign BombFreq 0b1111
+
 org BootSector.Begin
 
 ;; Entry point: set up graphics and run game
@@ -140,9 +148,9 @@ PopulateTextBuf:
   ; random number generator, and it's apparently supported on all x86 CPUs since
   ; the Pentium line)
   ;
-  ; dl = ! (rdtsc() & 0xf)
+  ; dl = ! (rdtsc() & BombFreq)
   rdtsc
-  and al, 0xf
+  and al, BombFreq
   setz dl
 
   ; Initialize loop counter for .LoopDir
