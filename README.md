@@ -8,14 +8,12 @@ BootMine is an entire minesweeper game crammed into 512 bytes, the size of a BIO
 
 ## Controls
 
-* <kbd>Space</kbd>
-  * 🔲 Clear cell
-* <kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>←</kbd>/<kbd>→</kbd>
-  * 🕹 Move cursor
-* <kbd>Enter</kbd>
-  * 🚩 Place flag
-* <kbd>R</kbd>
-  * 💣 Restart game (only works on GAME WIN and GAME OVER screens)
+| Key                                                 | Action                                                          |
+|-----------------------------------------------------|-----------------------------------------------------------------|
+| <kbd>Space</kbd>                                    | 🔲 Clear cell                                                  |
+| <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> | 🕹 Move cursor                                                 |
+| <kbd>Enter</kbd>                                    | 🚩 Place flag                                                  |
+| <kbd>R</kbd>                                        | 💣 Restart game (only works on GAME WIN and GAME OVER screens) |
 
 ## Building
 
