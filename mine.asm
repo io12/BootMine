@@ -231,8 +231,11 @@ DetectWin:
   ; Use cx as loop counter
   mov cx, TextBuf.Size
 .Loop:
-  ; Load VGA character
+  ; Load VGA character into ax
   lodsw
+  ; if ((ah == Color.Veiled || ah == Color.Flag) && al != '*') {
+  ;     break; // Didn't win yet :(
+  ; }
   cmp ah, Color.Veiled
   je .CheckMine
   cmp ah, Color.Flag
@@ -242,36 +245,43 @@ DetectWin:
   jne .Break
 .Continue:
   loop .Loop
+  ; If loop completes without breaking, then we win! :)
   jmp GameWin
 .Break:
+  ; Didn't win yet
   pop cx
   pop ax
 
-  ; Process key press
+;; Process key press. This is an if-else chain that runs code depending on the
+;; key pressed.
 CmpUp:
   cmp ah, Key.ScanCode.Up
   jne CmpDown
+  ; Move cursor up
   dec bx
   jmp WrapCursor
 CmpDown:
   cmp ah, Key.ScanCode.Down
   jne CmpLeft
+  ; Move cursor down
   inc bx
   jmp WrapCursor
 CmpLeft:
   cmp ah, Key.ScanCode.Left
   jne CmpRight
+  ; Move cursor left
   dec cx
   jmp WrapCursor
 CmpRight:
   cmp ah, Key.ScanCode.Right
   jne CmpEnter
+  ; Move cursor right
   inc cx
   jmp WrapCursor
 CmpEnter:
   cmp ah, Key.ScanCode.Enter
   jne CmpSpace
-  ; Place flag
+  ; Place flag by coloring current cell
   mov dl, Color.Flag
   mov [di + 1], dl
   jmp GameLoop
@@ -279,7 +289,9 @@ CmpSpace:
   cmp ah, Key.ScanCode.Space
   jne GameLoop
 
+;; If the player pressed space, clear the current cell
 ClearCell:
+  ; Set ax = cell value
   mov ax, [di]
   call UnveilCell
 .CmpEmpty:
@@ -340,7 +352,33 @@ GetTextBufIndex:
 ;; Returns:
 ;;   * dl - written VGA color code
 UnveilCell:
-  ; Use xor magic to make the cells colored
+  ; TLDR: Use xor magic to make the cells colored.
+  ;
+  ; We have three cases to consider:
+  ;
+  ; Case 1: the cell is a digit from 1-8
+  ;
+  ; The ASCII values '1', '2', '3', ..., '8' are 0x31, 0x32, 0x33, ..., 0x38. In
+  ; other words, the upper nibble is always 0x3 and the lower nibble is the
+  ; digit. We want the VGA color code to be `Color.Unveiled | digit`. For
+  ; example, the color of a '3' cell would be 0xf3.
+  ;
+  ; We can accomplish this with the formula `cell_value ^ '0' ^ Color.Unveiled`.
+  ; Xor-ing by '0' (0x30), clears the upper nibble of the cell value, leaving
+  ; just the digit value. Xor-ing again by Color.Unveiled sets the upper nibble
+  ; to 0xf, leading to the value `Color.Unveiled | digit`.
+  ;
+  ; Since xor is associative, this can be done in one operation, by xor-ing the
+  ; cell value by ('0' ^ Color.Unveiled).
+  ;
+  ; Case 2: the cell is a bomb
+  ;
+  ; We don't really care about this case as long as the bomb is visible against
+  ; the background. The bomb turns out to be green, oh well.
+  ;
+  ; Case 3: the cell is an empty space
+  ;
+  ; This ends up coloring the cell bright yellow, which isn't a big problem.
   mov dl, al
   xor dl, '0' ^ Color.Unveiled
   mov [di + 1], dl
@@ -469,7 +507,13 @@ GameOver:
   mov bp, GameOverStr
   mov bx, Color.GameOverText
 
-;; Helper code for GameWin and GameOver
+;; Helper code for GameWin and GameOver; print a string in the center of the
+;; text buffer, then wait for game to be restarted.
+;;
+;; Parameters:
+;;   * cx - length of string
+;;   * bp - pointer to string
+;;   * bx - color of string
 GameEndHelper:
   mov ax, 0x1300
   mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
