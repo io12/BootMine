@@ -25,7 +25,7 @@ make
 
 ## Installing
 
-This 512-byte file `bootmine`, can be written to the first sector of a floppy disk (or USB drive), with a command like `dd if=bootmine of=/dev/sdb`. Keep in mind that this will effectively destroy all data on the drive.
+This 512-byte file `bootmine.img`, can be written to the first sector of a floppy disk (or USB drive), with a command like `dd if=bootmine.img of=/dev/sdb`. Keep in mind that this will effectively destroy all data on the drive.
 
 ### Emulation
 

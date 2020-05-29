@@ -12,6 +12,9 @@ cpu 686
 ;; Words in 16 bit x86 are 2 bytes
 %assign WordSize 2
 
+;; Load address of DOS COM executables (relative to the cs segment)
+%assign DosComLoadAddress 0x100
+
 ;; This is the value to store in segment register to access the VGA text buffer.
 ;; In 16 bit x86, segmented memory accesses are of the form:
 ;;
@@ -68,7 +71,13 @@ cpu 686
 ;; halves the amount of bombs.
 %assign BombFreq 0b111
 
+;; BootMine is supported as both a DOS game and a boot sector game :)
+;; To build for DOS, run NASM with -DDOS and name the file with a .com extension
+%ifdef DOS
+org DosComLoadAddress
+%else
 org BootSector.Begin
+%endif
 
 ;; Entry point: set up graphics and run game
 BootMine:
@@ -167,8 +176,9 @@ PopulateTextBuf:
   ; Save di since it will be clobbered later
   push di
   ; Load adjacent cell offset from Dirs array into ax. Since the offset register
-  ; is bp, the segment register used is ss, which zero. This makes the memory
-  ; access relative to the start of RAM instead of the start of the text buffer.
+  ; is bp, the segment register used is ss, which is the same as cs. This makes
+  ; the memory access relative to BootMine's code instead of the start of the
+  ; text buffer.
   movsx ax, byte [bp + Dirs - 1]
   ; Set di = pointer to adjacent cell
   add di, ax
@@ -527,11 +537,17 @@ GameOver:
 ;;   * bp - pointer to string
 ;;   * bx - color of string
 GameEndHelper:
+  ; Reset es segment register so printing the game end message works correctly.
+  ; When running as a boot sector, cs=0, so this will reset es to 0. When
+  ; running as a DOS COM executable, the original value of es will be the same
+  ; as cs. (COM executables set each segment register to the same value)
+  ;
+  ; es = cs
+  mov di, cs
+  mov es, di
+
   mov ax, 0x1300
   mov dx, ((TextBuf.Height / 2) << 8) | (TextBuf.Width / 2 - GameOverStr.Len / 2)
-  ; es = 0
-  xor di, di
-  mov es, di
   int 0x10
 
 ;; Wait for restart key to be pressed, then restart game
@@ -548,6 +564,7 @@ WaitRestart:
 %warning Code is CodeSize bytes
 
 CodeEnd:
+%ifndef DOS
   ; Pad to size of boot sector, minus the size of a word for the boot sector
   ; magic value. If the code is too big to fit in a boot sector, the `times`
   ; directive uses a negative value, causing a build error.
@@ -555,5 +572,4 @@ CodeEnd:
 
   ; Boot sector magic
   dw 0xaa55
-
-;; Boot sector ends here
+%endif
