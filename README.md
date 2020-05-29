@@ -52,3 +52,8 @@ make dosbox
 ```sh
 make dosemu
 ```
+
+## Credits
+
+* [nanochess](https://github.com/nanochess), for his excellent collection of boot sector games
+* Curt Johnson and Robert Donner, for [Microsoft Minesweeper](https://en.wikipedia.org/wiki/Microsoft_Minesweeper), popularizing the game
