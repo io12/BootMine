@@ -40,3 +40,15 @@ make bochs
 ```
 
 **NOTE**: The way Bochs implements the `rdtsc` instruction appears to be bad as a source of entropy, so the bomb locations are predictable.
+
+## DOS
+
+BootMine has DOS support too! Running `make` also produces `bootmine.com` that can be run in DOS. There are Makefile targets for easily running in DOSBox and DOSEMU.
+
+```sh
+make dosbox
+```
+
+```sh
+make dosemu
+```
