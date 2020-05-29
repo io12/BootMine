@@ -19,9 +19,12 @@ BootMine is an entire minesweeper game crammed into 512 bytes, the size of a BIO
 
 ## Building
 
-Build dependencies:
-  + `nasm`
-  + `make`
+### Build dependencies
+
+* `nasm`
+* `make`
+
+### Run
 
 ```sh
 make
