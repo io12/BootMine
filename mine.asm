@@ -5,20 +5,33 @@ cpu 686
 
 ;; Boot sector load address
 %assign BootSector.Begin 0x7c00
-%assign BootSector.Size 512
-%assign BootSector.End BootSector.Begin + BootSector.Size
 
+;; Boot sector size in bytes
+%assign BootSector.Size 512
+
+;; Words in 16 bit x86 are 2 bytes
 %assign WordSize 2
 
-;; Address and dimensions of text buffer
+;; This is the value to store in segment register to access the VGA text buffer.
+;; In 16 bit x86, segmented memory accesses are of the form:
+;;
+;;   (segment register) * 0x10 + (offset register)
+;;
+;; The VGA text buffer is at 0xb80000, so if 0xb800 is stored in a segment
+;; register, then memory access instructions will be relative to the VGA text
+;; buffer, allowing easier access. For example, trying to access the nth byte of
+;; memory will *actually* access the nth byte of the text buffer.
 %assign TextBuf.Seg 0xb800
+
+;; Dimensions of text buffer
 %assign TextBuf.Width 40
 %assign TextBuf.Height 25
-%assign TextBuf.Size TextBuf.Width * TextBuf.Height
+%assign TextBuf.Size (TextBuf.Width * TextBuf.Height)
+
+;; Macro to get the index of a text buffer cell from coordinates
 %define TextBuf.Index(y, x) ((y) * TextBuf.Width * 2 + (x) * 2)
 
-;; Dirs data info
-;; TODO: make this not hardcoded?
+;; Length of Dirs array defined below
 %assign Dirs.Len 8
 
 ;; Keyboard scan codes
@@ -33,9 +46,14 @@ cpu 686
 ;; Keyboard ASCII codes
 %assign Key.Ascii.RestartGame 'r'
 
+;; This is a convenience macro for creating VGA characters. VGA characters are
+;; 16 bit words, with the lower byte as the ASCII value and the upper byte
+;; holding the foreground and background colors.
 %define VgaChar(color, ascii) (((color) << 8) | (ascii))
 
-%assign Color.Veiled 0x77
+;; VGA colors to use for game items
+;; https://wiki.osdev.org/Text_UI#Colours
+%assign Color.Veiled 0x17
 %assign Color.Unveiled 0xf0
 %assign Color.Cursor 0x00
 %assign Color.Flag 0xcc
@@ -80,11 +98,12 @@ BootMine:
 
 ;; Run game (the game is restarted by jumping here)
 RunGame:
-  ; Load VGA text buffer segment into es
+  ; Load VGA text buffer segment into segment registers
   mov dx, TextBuf.Seg
   mov es, dx
   mov ds, dx
 
+;; Set all cells of game map to veiled '0' cells
 ZeroTextBuf:
   xor di, di
   mov cx, TextBuf.Size
@@ -93,29 +112,40 @@ ZeroTextBuf:
   stosw
   loop .Loop
 
-;; Populate text buffer
+;; Populate text buffer with mines and digits
+;;
+;; This is done with a single triple-nested loop. The nested loops iterate over
+;; y coordinates, then x coordinates, then over the 8 adjacent cells at (y, x).
+;;
+;; Inside the inner loop is bomb generation and digit incrementing logic.
+;;
+;; Note that the coordinates on the outside border are skipped to avoid bounds
+;; checking logic.
 PopulateTextBuf:
-  xor di, di
+  xor di, di                    ; TODO: delete this
+  ; Iterate over y coordinates
   mov bx, TextBuf.Height - 2
 
 .LoopY:
+  ; Iterate over x coordinates
   mov cx, TextBuf.Width - 2
 
 .LoopX:
+  ; Iterate over adjacent cells (directions)
   mov bp, Dirs.Len
 
-  push bx
-  push cx
+  push bx                       ; TODO: delete this
+  push cx                       ; TODO: delete this
 
   ; di = &TextBuf[y][x]
   call GetTextBufIndex
 
-  pop cx
-  pop bx
+  pop cx                        ; TODO: delete this
+  pop bx                        ; TODO: delete this
 
   ; dx = ! (bool) (rdtsc() & 0xf)
   rdtsc
-  and al, 0xf
+  and al, 0x0
   setz dl
 
   jnz .LoopDir
@@ -251,7 +281,17 @@ SetCursorPos:
 
   jmp GameLoop
 
+;; Compute the text buffer index from y and x coordinates
+;;
 ;; di = &TextBuf[bx = y][cx = x]
+;;
+;; This computes the equivalent of the TextBuf.Index(y, x) macro, but at runtime
+;;
+;; Parameters:
+;;   * bx - y coordinate
+;;   * cx - x coordinate
+;; Returns:
+;;   * di - text buffer index
 GetTextBufIndex:
   push cx
   imul di, bx, TextBuf.Width * 2
