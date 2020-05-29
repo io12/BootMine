@@ -44,6 +44,7 @@ cpu 686
 
 org BootSector.Begin
 
+;; Entry point: set up graphics and run game
 BootMine:
   ; VGA text mode 0x00
   ; 320x200 pixel resolution
@@ -71,6 +72,8 @@ BootMine:
   dec dx
   out dx, al
 
+;; Run game (the game is restarted by jumping here)
+RunGame:
   ; Load VGA text buffer segment into es
   mov dx, TextBuf.Seg
   mov es, dx
@@ -403,7 +406,7 @@ WaitRestart:
   int 0x16
   cmp al, Key.Ascii.RestartGame
   jne WaitRestart
-  jmp BootMine
+  jmp RunGame
 
 
 ;; Print program size at build time
