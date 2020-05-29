@@ -53,7 +53,7 @@ cpu 686
 
 ;; VGA colors to use for game items
 ;; https://wiki.osdev.org/Text_UI#Colours
-%assign Color.Veiled 0x17
+%assign Color.Veiled 0x77
 %assign Color.Unveiled 0xf0
 %assign Color.Cursor 0x00
 %assign Color.Flag 0xcc
@@ -117,7 +117,8 @@ ZeroTextBuf:
 ;; This is done with a single triple-nested loop. The nested loops iterate over
 ;; y coordinates, then x coordinates, then over the 8 adjacent cells at (y, x).
 ;;
-;; Inside the inner loop is bomb generation and digit incrementing logic.
+;; Inside the 2nd loop level is bomb generation logic. Digit incrementing logic
+;; is in the 3rd loop level.
 ;;
 ;; Note that the coordinates on the outside border are skipped to avoid bounds
 ;; checking logic.
@@ -131,9 +132,6 @@ PopulateTextBuf:
   mov cx, TextBuf.Width - 2
 
 .LoopX:
-  ; Iterate over adjacent cells (directions)
-  mov bp, Dirs.Len
-
   push bx                       ; TODO: delete this
   push cx                       ; TODO: delete this
 
@@ -143,39 +141,70 @@ PopulateTextBuf:
   pop cx                        ; TODO: delete this
   pop bx                        ; TODO: delete this
 
-  ; dx = ! (bool) (rdtsc() & 0xf)
+  ; The register dl holds a boolean that is 1 if the current cell is a bomb, 0
+  ; otherwise. It is calculated by bitwise and-ing the result of rdtsc. (rdtsc
+  ; returns the amount of CPU cycles since boot, which works okay as a cheap
+  ; random number generator, and it's apparently supported on all x86 CPUs since
+  ; the Pentium line)
+  ;
+  ; dl = ! (rdtsc() & 0xf)
   rdtsc
-  and al, 0x0
+  and al, 0xf
   setz dl
 
+  ; Initialize loop counter for .LoopDir
+  mov bp, Dirs.Len
+
+  ; If this cell isn't a bomb, then skip marking it as a bomb
   jnz .LoopDir
+
+  ; Mark the current cell as a bomb
   mov byte [di], '*'
 
+  ; Iterate over adjacent cells (directions)
 .LoopDir:
+  ; Save di since it will be clobbered later
   push di
+  ; Load adjacent cell offset from Dirs array into ax. Since the offset register
+  ; is bp, the segment register used is ss, which zero. This makes the memory
+  ; access relative to the start of RAM instead of the start of the text buffer.
   movsx ax, byte [bp + Dirs - 1]
+  ; Set di = pointer to adjacent cell
   add di, ax
+  ; Set al = value of adjacent cell
   mov al, [di]
 
+  ; If adjacent cell is a bomb, skip digit incrementing
   cmp al, '*'
   je .LoopDirIsMine
+  ; The adjacent cell is a 0-7 digit and not a bomb. Add dl to the cell, which
+  ; is 1 if the original cell is a bomb. This gradually accumulates to the
+  ; amount of neighboring bombs and represents the number cells in the
+  ; minesweeper game.
   add [di], dl
 .LoopDirIsMine:
+  ; Restore di to original cell pointer
   pop di
 
+  ; Decrement adjacent direction loop counter and continue if nonzero
   dec bp
   jnz .LoopDir
 
+  ; Decrement x coordinate loop counter and continue if nonzero
   loop .LoopX
 
+  ; Decrement y coordinate loop counter and continue if nonzero
   dec bx
   jnz .LoopY
 
-;; Done populating text buf
+;; Done populating the text buffer
 
-  ; Set the initial cursor color for game loop
+  ; Set the initial cursor color for game loop. The dl register is now used to
+  ; store the saved cell color that the cursor is on, since the cursor
+  ; overwrites the cell color with the cursor color.
   mov dl, Color.Veiled
 
+;; Main loop to process key presses and update state
 GameLoop:
   ; Get keystroke
   ; ah = BIOS scan code
@@ -184,7 +213,7 @@ GameLoop:
   xor ax, ax
   int 0x16
 
-  ; bx and cx zeroed from PopulateTextBuf loops above
+  ; bx and cx are zeroed from the PopulateTextBuf loops above
   ; bx = y coord
   ; cx = x coord
 
@@ -193,13 +222,16 @@ GameLoop:
   ; Apply saved cell color
   mov [di + 1], dl
 
-  ; Detect win (a win occurs when every veiled cell is a mine)
+;; Detect win (a win occurs when every veiled cell is a mine)
 DetectWin:
+  ; Use si register as cell pointer for win detection
   xor si, si
   push ax
   push cx
+  ; Use cx as loop counter
   mov cx, TextBuf.Size
 .Loop:
+  ; Load VGA character
   lodsw
   cmp ah, Color.Veiled
   je .CheckMine
