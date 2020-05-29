@@ -123,7 +123,6 @@ ZeroTextBuf:
 ;; Note that the coordinates on the outside border are skipped to avoid bounds
 ;; checking logic.
 PopulateTextBuf:
-  xor di, di                    ; TODO: delete this
   ; Iterate over y coordinates
   mov bx, TextBuf.Height - 2
 
@@ -132,14 +131,8 @@ PopulateTextBuf:
   mov cx, TextBuf.Width - 2
 
 .LoopX:
-  push bx                       ; TODO: delete this
-  push cx                       ; TODO: delete this
-
   ; di = &TextBuf[y][x]
   call GetTextBufIndex
-
-  pop cx                        ; TODO: delete this
-  pop bx                        ; TODO: delete this
 
   ; The register dl holds a boolean that is 1 if the current cell is a bomb, 0
   ; otherwise. It is calculated by bitwise and-ing the result of rdtsc. (rdtsc
@@ -303,12 +296,10 @@ ClearCell:
   jmp GameLoop
 .CmpMine:
   cmp al, '*'
-  jne .Digit
+  ; No handling needed if cell is digit
+  jne GameLoop
   ; If cell is bomb, game over :(
   jmp GameOver
-.Digit:
-  ; TODO: fold this
-  jmp GameLoop
 
 ;; Set y and x coordinates of cursor to zero if they are out of bounds
 WrapCursor:
