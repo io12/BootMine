@@ -19,18 +19,15 @@ BootMine is an entire minesweeper game crammed into 512 bytes, the size of a BIO
 
 ## Building
 
-### Build dependencies
-
-* `nasm`
-* `make`
-
-### Run
+Make sure `nasm` and `make` are installed, then run:
 
 ```sh
 make
 ```
 
-This will build the 512-byte file `bootmine`, which can be written to the first sector of a floppy disk (or USB drive), with a command like `dd if=bootmine of=/dev/sdb`. Keep in mind that this will effectively destroy all data on the drive.
+## Installing
+
+This 512-byte file `bootmine`, can be written to the first sector of a floppy disk (or USB drive), with a command like `dd if=bootmine of=/dev/sdb`. Keep in mind that this will effectively destroy all data on the drive.
 
 ### Emulation
 
