@@ -66,7 +66,7 @@ cpu 686
 ;;
 ;; In other words, when BombFreq=0, every cell is a bomb, and appending a one
 ;; halves the amount of bombs.
-%assign BombFreq 0b1111
+%assign BombFreq 0b111
 
 org BootSector.Begin
 
