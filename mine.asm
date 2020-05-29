@@ -294,19 +294,25 @@ ClearCell:
   ; Set ax = cell value
   mov ax, [di]
   call UnveilCell
+;; If-else chain checking the cell value
 .CmpEmpty:
   cmp al, '0'
   jne .CmpMine
+  ; If cell is empty, run flood fill algorithm
   call Flood
   jmp GameLoop
 .CmpMine:
   cmp al, '*'
   jne .Digit
+  ; If cell is bomb, game over :(
   jmp GameOver
 .Digit:
+  ; TODO: fold this
   jmp GameLoop
 
+;; Set y and x coordinates of cursor to zero if they are out of bounds
 WrapCursor:
+.Y:
   ; Wrap y cursor
   cmp bx, TextBuf.Height
   jb .X
@@ -318,8 +324,12 @@ WrapCursor:
   jb SetCursorPos
   xor cx, cx
 
+;; Redraw cursor in new position
 SetCursorPos:
+  ; Get text buffer index (it changed)
   call GetTextBufIndex
+  ; Draw cursor by changing cell to the cursor color, but save current color for
+  ; restoring in the next iteration of the game loop.
   mov dl, Color.Cursor
   xchg dl, [di + 1]
 
@@ -476,6 +486,9 @@ Flood:
 .Ret:
   ret
 
+;; Array of adjacent cell offsets. A byte in this array can be added to a text
+;; buffer cell pointer to get the pointer to an adjacent cell. This is used for
+;; spawning digit cells.
 Dirs:
   db TextBuf.Index(-1, -1)
   db TextBuf.Index(-1,  0)
