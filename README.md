@@ -38,3 +38,5 @@ make qemu
 ```sh
 make bochs
 ```
+
+**NOTE**: The way Bochs implements the `rdtsc` instruction appears to be bad as a source of entropy, so the bomb locations are predictable.
