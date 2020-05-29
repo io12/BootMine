@@ -54,6 +54,12 @@ BootMine:
   xor ax, ax
   int 0x10
 
+  ; Disable VGA text mode cursor
+  ; https://wiki.osdev.org/Text_Mode_Cursor#Disabling_the_Cursor
+  mov ah, 0x01
+  mov ch, 0x3f
+  int 0x10
+
   ; Disable blinking text
   ; https://www.reddit.com/r/osdev/comments/70fcig/blinking_text/dn2t6u8?utm_source=share&utm_medium=web2x
   ; Read I/O Address 0x03DA to reset index/data flip-flop
