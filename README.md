@@ -2,7 +2,18 @@
 
 *Ever wanted to play minesweeper but didn't have an OS to run it in? No? Really no??*
 
-BootMine is an entire minesweeper game crammed into 512 bytes, the size of a BIOS boot sector. It can boot on any machine that supports BIOS booting, without running inside an OS. In a sense, BootMine is its own OS that can do nothing but run minesweeper.
+BootMine is an entire minesweeper game crammed into 512 bytes, the size of a BIOS boot sector. It can boot on any PC that supports BIOS booting, without running inside an OS. In a sense, BootMine is its own OS that can do nothing but run minesweeper.
+
+## Controls
+
+* <kbd>Space</kbd>
+  * 🔲 Clear cell
+* <kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>←</kbd>/<kbd>→</kbd>
+  * 🕹 Move cursor
+* <kbd>Enter</kbd>
+  * 🚩 Place flag
+* <kbd>R</kbd>
+  * 💣 Restart game (only works on GAME WIN and GAME OVER screens)
 
 ## Building
 
