@@ -53,6 +53,10 @@ make dosbox
 make dosemu
 ```
 
+## Links
+
+* [Hacker News discussion](https://news.ycombinator.com/item?id=23360133)
+
 ## Credits
 
 * [nanochess](https://github.com/nanochess), for his excellent collection of boot sector games
