@@ -38,7 +38,7 @@ cpu 686
 %assign Dirs.Len 8
 
 ;; Keyboard scan codes
-;; http://www.ctyme.com/intr/rb-0045.htm#Table6
+;; http://www.delorie.com/djgpp/doc/rbinter/it/06/0.html
 %assign Key.ScanCode.Space 0x39
 %assign Key.ScanCode.Up 0x48
 %assign Key.ScanCode.Down 0x50
@@ -85,7 +85,7 @@ BootMine:
   ; 320x200 pixel resolution
   ; 40x25 text resolution
   ; 16 colors
-  ; http://www.ctyme.com/intr/rb-0069.htm
+  ; http://www.delorie.com/djgpp/doc/rbinter/id/74/0.html
   xor ax, ax
   int 0x10
 
@@ -220,7 +220,7 @@ GameLoop:
   ; Get keystroke
   ; ah = BIOS scan code
   ; al = ASCII character
-  ; http://www.ctyme.com/intr/rb-1754.htm
+  ; http://www.delorie.com/djgpp/doc/rbinter/id/63/17.html
   xor ax, ax
   int 0x16
 
