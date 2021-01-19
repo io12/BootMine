@@ -23,6 +23,9 @@ Make sure `nasm` and `make` are installed, then run:
 make
 ```
 
+Alternatively, prebuilt versions can be downloaded from the
+[releases page](https://github.com/io12/BootMine/releases).
+
 ## Installing
 
 The 512-byte file `bootmine.img` can be written to the first sector of a floppy disk (or USB drive), with a command like `dd if=bootmine.img of=/dev/sdb`. Keep in mind that this will effectively destroy all data on the drive.
